@@ -123,7 +123,6 @@ class Home extends StatelessWidget {
  }
 
 
-
 class LoginScreen extends StatefulWidget {
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -234,6 +233,7 @@ class _LoginScreenState extends State<LoginScreen> {
               left: 30.0,
               right: 30.0,
               child: TextField(
+                key: Key('usernameField'), // Added key here
                 controller: usernameController,
                 onSubmitted: (value) {
                   if (isButtonActive) _handleLogin();
@@ -265,6 +265,7 @@ class _LoginScreenState extends State<LoginScreen> {
               left: 30.0,
               right: 30.0,
               child: TextField(
+                key: Key('passwordField'), // Added key here
                 controller: passwordController,
                 obscureText: true,
                 onSubmitted: (value) {
@@ -337,6 +338,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
 
 
 
