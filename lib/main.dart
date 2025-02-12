@@ -189,19 +189,20 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false, // Prevents content shifting
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Stack(
           children: [
 
             Positioned(
-              top: -280,
-              right: 38,
-              child: Image.asset('images/mainlogo.png', width: MediaQuery.of(context).size.width * 0.8, height: MediaQuery.of(context).size.height, fit: BoxFit.contain),
+              top: -300,
+              left: 87,
+              child: Image.asset('images/mainlogo.png', width: MediaQuery.of(context).size.width * 0.6, height: MediaQuery.of(context).size.height, fit: BoxFit.contain),
             ),
 
             Positioned(
-              top: 205.0,
+              top: 250.0,
               left: 30.0,
               child: Text(
                 'Log in to your Account',
@@ -209,14 +210,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   color: Color(0xFF050a30),
                   fontSize: 20,
                   fontFamily: 'Mosafin',
-                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
 
             // Username Label
             Positioned(
-              top: 235.0,
+              top: 290,
               left: 30.0,
               child: Text(
                 'Username',
@@ -230,11 +230,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
             // Username TextField
             Positioned(
-              top: 260.0,
-              left: 24.0,
+              top: 320,
+              left: 30.0,
               right: 30.0,
               child: TextField(
                 controller: usernameController,
+                onSubmitted: (value) {
+                  if (isButtonActive) _handleLogin();
+                },
                 decoration: InputDecoration(
                   hintText: 'Enter username',
                   border: OutlineInputBorder(),
@@ -244,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             // Password Label
             Positioned(
-              top: 320.0,
+              top: 400.0,
               left: 30.0,
               child: Text(
                 'Password',
@@ -258,12 +261,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
             // Password TextField
             Positioned(
-              top: 345.0,
-              left: 24.0,
+              top: 430.0,
+              left: 30.0,
               right: 30.0,
               child: TextField(
                 controller: passwordController,
                 obscureText: true,
+                onSubmitted: (value) {
+                  if (isButtonActive) _handleLogin();
+                },
                 decoration: InputDecoration(
                   hintText: 'Enter password',
                   border: OutlineInputBorder(),
@@ -277,12 +283,13 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Text(
                 'Forget password?',
                 style: TextStyle(
-                  color: Color(0xFF050a30),
+                  color: Color(0xffffffff),
                   fontSize: 15,
                   fontFamily: 'Mosafin',
                 ),
               ),
             ),
+
 
             // Sign-In Button
             Positioned(
@@ -366,7 +373,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   .height * 0.5, fit: BoxFit.contain),
             ),
             Positioned(
-              bottom: -380,
+              bottom: -400,
               left: 0,
               child: Image.asset('images/minibar.png', width: MediaQuery
                   .of(context)
@@ -389,8 +396,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   .height , fit: BoxFit.contain),
             ),
             Positioned(
-              top: 345,
-              left: 12,
+              top: 360,
+              left: 20,
               child: Image.asset('images/safemessages.png', width: MediaQuery
                   .of(context)
                   .size
