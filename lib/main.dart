@@ -29,7 +29,7 @@ class _SplashState extends State<Splash> {
   void initState() {
     super.initState();
     Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Home()));
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Home()));
       }
     );
   }
@@ -63,7 +63,6 @@ class _SplashState extends State<Splash> {
 
 class Home extends StatelessWidget {
   const Home({super.key});
-
   @override
   Widget build(BuildContext context) {
     return  Scaffold(
@@ -91,10 +90,10 @@ class Home extends StatelessWidget {
         child: OutlinedButton(
           onPressed: () {
             Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => LoginScreen()),
-              );
-            },
+              context,
+              MaterialPageRoute(builder: (context) => LoginScreen()),
+            );
+          },
             style: OutlinedButton.styleFrom(
             foregroundColor: Colors.white,
             backgroundColor: Color(0xFF050a30),
@@ -109,6 +108,7 @@ class Home extends StatelessWidget {
         left: 150,
         child: OutlinedButton(
           onPressed: () {},
+
            style: OutlinedButton.styleFrom(
            foregroundColor: Color(0xFF050a30),
            backgroundColor: Colors.white,
@@ -122,125 +122,126 @@ class Home extends StatelessWidget {
     ),
    );
   }
+
  }
 
 
 
-class LoginScreen extends StatelessWidget {
-   LoginScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
 
-    final usernameController = TextEditingController();
-    final passwordController = TextEditingController();
+class _LoginScreenState extends State<LoginScreen> {
+  bool isButtonActive = false;
+  String errorMessage = '';
+
+  late TextEditingController usernameController;
+  late TextEditingController passwordController;
+
+  final String correctUsername = 'admin';
+  final String correctPassword = 'password123';
+
+  @override
+  void initState() {
+    super.initState();
+
+    usernameController = TextEditingController();
+    passwordController = TextEditingController();
+
+    usernameController.addListener(_checkButtonState);
+    passwordController.addListener(_checkButtonState);
+  }
+
+  void _checkButtonState() {
+    setState(() {
+      isButtonActive = usernameController.text.isNotEmpty &&
+          passwordController.text.isNotEmpty;
+    });
+  }
+
+  void _handleLogin() {
+    String enteredUsername = usernameController.text;
+    String enteredPassword = passwordController.text;
+
+    if (enteredUsername != correctUsername) {
+      setState(() {
+        errorMessage = 'Invalid account';
+      });
+    }
+    else if (enteredPassword != correctPassword) {
+      setState(() {
+        errorMessage = 'Invalid password';
+      });
+    }
+    else {
+      setState(() {
+        errorMessage = '';
+      });
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Center(
-          child: Column(
-            children: [
+        child: Stack(
+          children: [
+
+            // Sign-In Button
+            Positioned(
+              bottom: 200.0,
+              left: 60.0,
+              right: 60.0,
+              child: OutlinedButton(
+                onPressed: isButtonActive
+                    ? () {
+                  _handleLogin();
+                }
+                    : null,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: isButtonActive ? Colors.white : Colors.grey,
+                  backgroundColor: isButtonActive ? Color(0xFF050a30) : Colors.grey[400],
+                  side: BorderSide(color: Color(0xFF050a30)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  minimumSize: Size(100, 45),
+                ),
+                child: Text('LOG IN'),
+              ),
+            ),
+
+            if (errorMessage.isNotEmpty)
               Positioned(
-                top: 0,
-                left: 0,
-                child: Image.asset('images/mainlogo.png', width: MediaQuery.of(context).size.width * 0.7, height: MediaQuery.of(context).size.height * 0.2, fit: BoxFit.contain),
-              ),
-
-              const SizedBox(height: 50),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30.0),
-                child: Row(
-                  children: [
-                    Text(
-                      'Login to your Account',
-                      style: TextStyle(color: Color(0xFF050a30), fontWeight: FontWeight.bold, fontSize: 18),
-                      ),
-                    ]
+                bottom: 140.0,
+                left: 60.0,
+                right: 60.0,
+                child: Text(
+                  errorMessage,
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                   ),
-              ),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30.0),
-                child: Row(
-                    children: [
-                      Text(
-                        'Username/ mobile number',
-                        style: TextStyle(color: Color(0xFF050a30)),
-                      ),
-                    ]
-                  ),
-              ),
-
-
-              // username
-              MyTextField(controller: usernameController, hintText: 'Enter username', obscureText: false),
-
-              const SizedBox(height: 10),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30.0),
-                child: Row(
-                    children: [
-                      Text(
-                        'Password',
-                        style: TextStyle(color: Color(0xFF050a30)),
-                      ),
-                    ]
-                  ),
-              ),
-
-              // password
-              MyTextField(controller: passwordController, hintText: 'Enter password', obscureText: true),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30.0),
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        'Forgot Password?',
-                        style: TextStyle(color: Color(0xFF050a30), fontSize: 12),
-                      ),
-                    ]
-                  ),
-              ),
-
-                const SizedBox(height: 25),
-                      OutlinedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => HomeScreen()),
-                          );
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor: Color(0xFF050a30),
-                          side: BorderSide(color: Color(0xFF050a30), width: 2 ),
-                          minimumSize: Size (200, 40),
-                        ),
-                        child: Text('SIGN IN'),
-                      ),
-
-               /* MyButton(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => HomeScreen()),
-                    );
-                  },
-                ), */
-
-                    ]
+                  textAlign: TextAlign.center,
                 ),
               ),
-          ),
+          ],
+        ),
+      ),
     );
   }
 }
 
 
-class HomeScreen extends StatelessWidget {
+
+  class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
