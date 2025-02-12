@@ -1,7 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'my_textfield.dart';
-import 'my_button.dart';
 
  void main() {
   runApp(const MyApp());
@@ -139,8 +136,11 @@ class _LoginScreenState extends State<LoginScreen> {
   late TextEditingController usernameController;
   late TextEditingController passwordController;
 
-  final String correctUsername = 'admin';
-  final String correctPassword = 'password123';
+  final Map<String, String> userDatabase = {
+    'admin1': 'password123',
+    'admin2': 'password456',
+    'admin3': 'password789',
+  };
 
   @override
   void initState() {
@@ -164,12 +164,13 @@ class _LoginScreenState extends State<LoginScreen> {
     String enteredUsername = usernameController.text;
     String enteredPassword = passwordController.text;
 
-    if (enteredUsername != correctUsername) {
+    // Check if the entered username exists and the password matches
+    if (!userDatabase.containsKey(enteredUsername)) {
       setState(() {
-        errorMessage = 'Invalid account';
+        errorMessage = 'Invalid username';
       });
     }
-    else if (enteredPassword != correctPassword) {
+    else if (userDatabase[enteredUsername] != enteredPassword) {
       setState(() {
         errorMessage = 'Invalid password';
       });
@@ -192,6 +193,96 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Stack(
           children: [
+
+            Positioned(
+              top: -280,
+              right: 38,
+              child: Image.asset('images/mainlogo.png', width: MediaQuery.of(context).size.width * 0.8, height: MediaQuery.of(context).size.height, fit: BoxFit.contain),
+            ),
+
+            Positioned(
+              top: 205.0,
+              left: 30.0,
+              child: Text(
+                'Log in to your Account',
+                style: TextStyle(
+                  color: Color(0xFF050a30),
+                  fontSize: 20,
+                  fontFamily: 'Mosafin',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+
+            // Username Label
+            Positioned(
+              top: 235.0,
+              left: 30.0,
+              child: Text(
+                'Username',
+                style: TextStyle(
+                  color: Color(0xFF050a30),
+                  fontSize: 15,
+                  fontFamily: 'Mosafin',
+                ),
+              ),
+            ),
+
+            // Username TextField
+            Positioned(
+              top: 260.0,
+              left: 24.0,
+              right: 30.0,
+              child: TextField(
+                controller: usernameController,
+                decoration: InputDecoration(
+                  hintText: 'Enter username',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+
+            // Password Label
+            Positioned(
+              top: 320.0,
+              left: 30.0,
+              child: Text(
+                'Password',
+                style: TextStyle(
+                  color: Color(0xFF050a30),
+                  fontSize: 15,
+                  fontFamily: 'Mosafin',
+                ),
+              ),
+            ),
+
+            // Password TextField
+            Positioned(
+              top: 345.0,
+              left: 24.0,
+              right: 30.0,
+              child: TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  hintText: 'Enter password',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+
+            Positioned(
+              top: 410.0,
+              right: 35.0,
+              child: Text(
+                'Forget password?',
+                style: TextStyle(
+                  color: Color(0xFF050a30),
+                  fontSize: 15,
+                  fontFamily: 'Mosafin',
+                ),
+              ),
+            ),
 
             // Sign-In Button
             Positioned(
@@ -217,6 +308,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
 
+            // Error message display
             if (errorMessage.isNotEmpty)
               Positioned(
                 bottom: 140.0,
