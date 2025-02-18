@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spam_defender/main.dart';
+import 'package:spamdefender/main.dart';
 
 void main() {
   testWidgets('Splash screen navigates to Home screen', (WidgetTester tester) async {
@@ -136,29 +136,29 @@ void main() {
   });
 
   testWidgets('Login button is disabled when password is empty', (WidgetTester tester) async {
-  await tester.pumpWidget(MaterialApp(home: LoginScreen()));
+    await tester.pumpWidget(MaterialApp(home: LoginScreen()));
 
-  await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
 
-  // Find the username and password fields by their keys
-  final Finder usernameField = find.byKey(Key('usernameField'));
-  final Finder passwordField = find.byKey(Key('passwordField'));
+    // Find the username and password fields by their keys
+    final Finder usernameField = find.byKey(Key('usernameField'));
+    final Finder passwordField = find.byKey(Key('passwordField'));
 
-  // Ensure the fields are found before interacting
-  expect(usernameField, findsOneWidget);
-  expect(passwordField, findsOneWidget);
+    // Ensure the fields are found before interacting
+    expect(usernameField, findsOneWidget);
+    expect(passwordField, findsOneWidget);
 
-  // Enter text in the username field but leave the password field empty
-  await tester.enterText(usernameField, 'admin1');
-  await tester.pump();
+    // Enter text in the username field but leave the password field empty
+    await tester.enterText(usernameField, 'admin1');
+    await tester.pump();
 
-  // Find the login button
-  final Finder loginButton = find.byType(OutlinedButton);
+    // Find the login button
+    final Finder loginButton = find.byType(OutlinedButton);
 
-  // Verify that the button is disabled (i.e., onPressed is null) because password is empty
-  final OutlinedButton button = tester.widget(loginButton);
-  expect(button.onPressed, isNull);
-});
+    // Verify that the button is disabled (i.e., onPressed is null) because password is empty
+    final OutlinedButton button = tester.widget(loginButton);
+    expect(button.onPressed, isNull);
+  });
 
 
   testWidgets('Login button is enabled when username and password are provided', (WidgetTester tester) async {
