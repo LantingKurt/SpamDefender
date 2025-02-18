@@ -1,15 +1,16 @@
 {
   "project_info": {
     "project_number": "338127217215",
+    "firebase_url": "https://spamdefender-192-default-rtdb.firebaseio.com",
     "project_id": "spamdefender-192",
     "storage_bucket": "spamdefender-192.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:338127217215:android:a7213ac5b9ccc3ad174e8a",
+        "mobilesdk_app_id": "1:338127217215:android:5f53cd5f37f574f6174e8a",
         "android_client_info": {
-          "package_name": "com.example.spam_defender"
+          "package_name": "up.edu.ph.spamdefender"
         }
       },
       "oauth_client": [],

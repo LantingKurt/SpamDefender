@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
- void main() {
+void main() {
   runApp(const MyApp());
 }
 
@@ -27,36 +27,36 @@ class _SplashState extends State<Splash> {
     super.initState();
     Future.delayed(const Duration(seconds: 2), () {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Home()));
-      }
+    }
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Color(0xFF050a30),
-        body: Stack(
-          children: [
-            Positioned(
-              top: 0,
-              right: -35,
-              child: Image.asset('images/yellowmainscreen.png', width: MediaQuery.of(context).size.width * 0.95, height: MediaQuery.of(context).size.height, fit: BoxFit.contain),
-            ),
-            Positioned(
-              top: -100,
-              left: 0,
-              child: Image.asset('images/graymainscreen.png', width: MediaQuery.of(context).size.width, height: MediaQuery.of(context).size.height, fit: BoxFit.contain),
-            ),
-            Positioned(
-              top: 60,
-              left: 60,
-              child: Image.asset('images/mainlogo.png', width: MediaQuery.of(context).size.width * 0.7, height: MediaQuery.of(context).size.height * 0.7, fit: BoxFit.contain),
-            ),
-          ],
-        ),
-      );
-    }
+      backgroundColor: Color(0xFF050a30),
+      body: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            right: -35,
+            child: Image.asset('images/yellowmainscreen.png', width: MediaQuery.of(context).size.width * 0.95, height: MediaQuery.of(context).size.height, fit: BoxFit.contain),
+          ),
+          Positioned(
+            top: -100,
+            left: 0,
+            child: Image.asset('images/graymainscreen.png', width: MediaQuery.of(context).size.width, height: MediaQuery.of(context).size.height, fit: BoxFit.contain),
+          ),
+          Positioned(
+            top: 60,
+            left: 60,
+            child: Image.asset('images/mainlogo.png', width: MediaQuery.of(context).size.width * 0.7, height: MediaQuery.of(context).size.height * 0.7, fit: BoxFit.contain),
+          ),
+        ],
+      ),
+    );
   }
+}
 
 class Home extends StatelessWidget {
   const Home({super.key});
@@ -65,62 +65,62 @@ class Home extends StatelessWidget {
     return  Scaffold(
       backgroundColor: Color(0xFF050a30),
       body: Stack(
-        children: [
-      Positioned(
-        top: 0,
-        right: -35,
-        child: Image.asset('images/yellowmainscreen.png', width: MediaQuery.of(context).size.width * 0.95, height: MediaQuery.of(context).size.height, fit: BoxFit.contain),
-      ),
-      Positioned(
-        top: 70,
-        left: 120,
-        child: Image.asset('images/welcometosd.png', width: MediaQuery.of(context).size.width * 0.55, height: MediaQuery.of(context).size.height * 0.5, fit: BoxFit.contain),
-      ),
-      Positioned(
-        top: 90,
-        left: 120,
-        child: Image.asset('images/startcleaning.png', width: MediaQuery.of(context).size.width * 0.30, height: MediaQuery.of(context).size.height * 0.5, fit: BoxFit.contain),
-      ),
-      Positioned(
-        top: 370,
-        left: 150,
-        child: OutlinedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => LoginScreen()),
-            );
-          },
-            style: OutlinedButton.styleFrom(
-            foregroundColor: Colors.white,
-            backgroundColor: Color(0xFF050a30),
-            side: BorderSide(color: Color(0xFF050a30), width: 2 ),
-            minimumSize: Size (200, 40),
-             ),
-            child: Text('LOG IN'),
-        ),
-      ),
-      Positioned(
-        top: 420,
-        left: 150,
-        child: OutlinedButton(
-          onPressed: () {},
+          children: [
+            Positioned(
+              top: 0,
+              right: -35,
+              child: Image.asset('images/yellowmainscreen.png', width: MediaQuery.of(context).size.width * 0.95, height: MediaQuery.of(context).size.height, fit: BoxFit.contain),
+            ),
+            Positioned(
+              top: 70,
+              left: 120,
+              child: Image.asset('images/welcometosd.png', width: MediaQuery.of(context).size.width * 0.55, height: MediaQuery.of(context).size.height * 0.5, fit: BoxFit.contain),
+            ),
+            Positioned(
+              top: 90,
+              left: 120,
+              child: Image.asset('images/startcleaning.png', width: MediaQuery.of(context).size.width * 0.30, height: MediaQuery.of(context).size.height * 0.5, fit: BoxFit.contain),
+            ),
+            Positioned(
+              top: 370,
+              left: 150,
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Color(0xFF050a30),
+                  side: BorderSide(color: Color(0xFF050a30), width: 2 ),
+                  minimumSize: Size (200, 40),
+                ),
+                child: Text('LOG IN'),
+              ),
+            ),
+            Positioned(
+              top: 420,
+              left: 150,
+              child: OutlinedButton(
+                onPressed: () {},
 
-           style: OutlinedButton.styleFrom(
-           foregroundColor: Color(0xFF050a30),
-           backgroundColor: Colors.white,
-           side: BorderSide(color: Colors.white, width: 2 ),
-           minimumSize: Size (200, 40),
-           ),
-           child: Text('SIGN UP'),
-        ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Color(0xFF050a30),
+                  backgroundColor: Colors.white,
+                  side: BorderSide(color: Colors.white, width: 2 ),
+                  minimumSize: Size (200, 40),
+                ),
+                child: Text('SIGN UP'),
+              ),
+            ),
+          ]
       ),
-     ]
-    ),
-   );
+    );
   }
 
- }
+}
 
 
 class LoginScreen extends StatefulWidget {
@@ -235,6 +235,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: TextField(
                 key: Key('usernameField'), // Added key here
                 controller: usernameController,
+                textInputAction: TextInputAction.next,
                 onSubmitted: (value) {
                   if (isButtonActive) _handleLogin();
                 },
@@ -342,7 +343,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
 
 
-  class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
@@ -397,16 +398,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   .size
                   .height , fit: BoxFit.contain),
             ),
-            Positioned(
-              top: 360,
-              left: 20,
-              child: Image.asset('images/safemessages.png', width: MediaQuery
-                  .of(context)
-                  .size
-                  .width * 0.30 , height: MediaQuery
-                  .of(context)
-                  .size
-                  .height * 0.4, fit: BoxFit.contain),
+            Align(
+              alignment: Alignment(-0.89, 0.40), // Adjust as needed
+              child: Image.asset(
+                'images/safemessages.png',
+                width: MediaQuery.of(context).size.width * 0.30,
+                height: MediaQuery.of(context).size.height * 0.4,
+                fit: BoxFit.contain,
+              ),
             ),
           ]
       ),
