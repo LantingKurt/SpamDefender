@@ -77,6 +77,8 @@ flutter:
     - images/allmessages.png
     - images/safemessages.png
     - images/spammessages.png
+    - images/whitelist.png
+    - images/minibartop.png
 
 
 
