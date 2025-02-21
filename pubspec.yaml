@@ -1,5 +1,5 @@
 name: spamdefender
-description: "A new Flutter project."
+description: "A mobile app that uses Machine Learning to detect and block spam or scam texts."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -30,10 +30,20 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  firebase_core: ^3.12.0    # Dependency for firebase
+  firebase_auth: ^5.5.0     # Firebase authentication
+  cloud_firestore: ^5.6.4   # For storing
+  firebase_storage: ^12.4.3 # For storing
+  firebase_app_check: ^0.3.2+3
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+
+
 
 dev_dependencies:
   flutter_test:
