@@ -149,8 +149,7 @@ class _SignupScreenState extends State<SignupScreen> {
   late TextEditingController passwordController;
   late TextEditingController confirmpasswordController;
 
-  final Map<String, String> userDatabase = {
-  };
+  final Map<String, String> userDatabase = {};
 
   @override
   void initState() {
@@ -176,25 +175,55 @@ class _SignupScreenState extends State<SignupScreen> {
     });
   }
 
+  bool _isValidEmail(String email) {
+    final regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    return regex.hasMatch(email);
+  }
+
+  bool _isValidPassword(String password, String username) {
+    if (password.length < 12) return false;
+
+    bool hasUppercase = password.contains(RegExp(r'[A-Z]'));
+    bool hasLowercase = password.contains(RegExp(r'[a-z]'));
+    bool hasDigits = password.contains(RegExp(r'[0-9]'));
+    bool hasSpecialChars = password.contains(RegExp(r'[!@#\$%\^&\*\(\)_\+\-=,./<>?;:|{}]'));
+
+    bool isValid = (hasUppercase ? 1 : 0) +
+        (hasLowercase ? 1 : 0) +
+        (hasDigits ? 1 : 0) +
+        (hasSpecialChars ? 1 : 0) >=
+        3;
+
+    if (password.contains(username)) return false;
+
+    return isValid;
+  }
+
   void _handleSignUp() {
     String enteredEmail = emailController.text;
     String enteredUsername = usernameController.text;
     String enteredPassword = passwordController.text;
     String confirmedPassword = confirmpasswordController.text;
 
-    if (enteredPassword != confirmedPassword) {
+    if (!_isValidEmail(enteredEmail)) {
+      setState(() {
+        errorMessage = 'Invalid email format';
+      });
+    } else if (enteredPassword != confirmedPassword) {
       setState(() {
         errorMessage = 'Passwords do not match';
+      });
+    } else if (!_isValidPassword(enteredPassword, enteredUsername)) {
+      setState(() {
+        errorMessage = 'Weak password format.';
       });
     } else {
       setState(() {
         if (userDatabase.containsKey(enteredEmail)) {
           errorMessage = 'Email already exists';
-        }
-        else if (userDatabase.containsKey(enteredUsername)) {
+        } else if (userDatabase.containsKey(enteredUsername)) {
           errorMessage = 'Username already exists';
-        }
-        else {
+        } else {
           userDatabase[enteredUsername] = enteredPassword;
           errorMessage = '';
           Navigator.push(
@@ -205,7 +234,6 @@ class _SignupScreenState extends State<SignupScreen> {
       });
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -366,7 +394,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
             // Sign-Up Button
             Positioned(
-              bottom: 60.0,
+              bottom: 70.0,
               left: 60.0,
               right: 60.0,
               child: OutlinedButton(
@@ -410,6 +438,8 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 }
+
+
 
 
 // LOG IN //
