@@ -319,6 +319,8 @@ class SignupScreenState extends State<SignupScreen> {
     String email = _emailController.text;
     String password = _passwordController.text;
 
+    User? user = await _auth.signUpWithEmailAndPassword(email, password);
+
     // Wrong email format
     // Regex:
     // ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
@@ -398,18 +400,19 @@ class SignupScreenState extends State<SignupScreen> {
       failedPasswordSignUpCriteria.add('The password must contain at least one special character.');
     }
 
-    if (failedPasswordSignUpCriteria.isNotEmpty || failedEmailSignUpCriteria.isNotEmpty){
-      setState(() {
-        errorMessage = [
-          ...failedEmailSignUpCriteria,
-          ...failedPasswordSignUpCriteria,
-        ].join('\n');
-        _isSigning = false; // Stop the spinner
-      });
-      return;
-    }
+    // if (failedPasswordSignUpCriteria.isNotEmpty || failedEmailSignUpCriteria.isNotEmpty){
+    //   setState(() {
+    //     errorMessage = [
+    //       ...failedEmailSignUpCriteria,
+    //       ...failedPasswordSignUpCriteria,
+    //       'Sign up failed. Please try again.'
+    //     ].join('\n');
+    //     _isSigning = false; // Stop the spinner
+    //   });
+    //   return;
+    // }
 
-    User? user = await _auth.signUpWithEmailAndPassword(email, password);
+
 
     if (user != null) {
       print("User is successfully created");
@@ -422,7 +425,11 @@ class SignupScreenState extends State<SignupScreen> {
     } else {
       print("User sign up failed");
       setState(() {
-        errorMessage = 'Sign up failed. Please try again.';
+        errorMessage = [
+          ...failedEmailSignUpCriteria,
+          ...failedPasswordSignUpCriteria,
+          'Sign up failed. Please try again.'
+        ].join('\n');
       });
     }
     setState(() {
