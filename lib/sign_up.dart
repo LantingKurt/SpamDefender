@@ -319,6 +319,96 @@ class SignupScreenState extends State<SignupScreen> {
     String email = _emailController.text;
     String password = _passwordController.text;
 
+    // Wrong email format
+    // Regex:
+    // ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
+    //
+    // Accepted:
+    // ✔ test.email@example.com
+    // ✔ user.name+tag@sub.domain.co.uk
+    // ✔ 123456789@domain.io
+    // ✔ first.last@company.org
+    // ✔ email@hyphen-domain.com
+    //
+    // Rejected:
+    // ❌ plainaddress (No @)
+    // ❌ @missingusername.com (Missing username)
+    // ❌ user@.com (Invalid domain)
+    // ❌ user@domain (No top-level domain)
+    // ❌ user@domain..com (Double dot issue)
+
+    final List<String> failedEmailSignUpCriteria = [];
+    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+
+// Check if email matches the valid format
+    if (!emailRegex.hasMatch(email)) {
+      failedEmailSignUpCriteria.add(
+          'Email must be in a valid format (e.g., test.email@example.com).');
+    }
+
+
+
+    // Must satisfy the following criterias:
+    //   Regex:
+    //   ^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{12,}$
+    //
+    //   Valid Passwords:
+    //   StrongPass1!@#
+    //   ComplexPwd2025$%
+    //   MySecure#Password123
+    //
+    //   Invalid Passwords:
+    //
+    //   short1A!
+    //   Issue: Less than 12 characters.
+    //
+    //   alllowercase123!
+    //   Issue: Missing uppercase letter.
+    //
+    //   ALLUPPERCASE123!
+    //   Issue: Missing lowercase letter.
+    //
+    //   NoNumbers!@#
+    //   Issue: Missing digit.
+    //
+    //   NoSpecialChar123
+    //   Issue: Missing special character.
+
+    final List<String> failedPasswordSignUpCriteria = [];
+    final passwordRegex = RegExp(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{12,}$');
+
+    // Check password length
+    if (password.length < 6) {
+      failedPasswordSignUpCriteria.add('The password must be at least 6 characters long.');
+    }
+    // Check for at least one uppercase letter
+    if (!RegExp(r'[A-Z]').hasMatch(password)) {
+      failedPasswordSignUpCriteria.add('The password must contain at least one uppercase letter.');
+    }
+    // Check for at least one lowercase letter
+    if (!RegExp(r'[a-z]').hasMatch(password)) {
+      failedPasswordSignUpCriteria.add('The password must contain at least one lowercase letter.');
+    }
+    // Check for at least one digit
+    if (!RegExp(r'\d').hasMatch(password)) {
+      failedPasswordSignUpCriteria.add('The password must contain at least one digit.');
+    }
+    // Check for at least one special character
+    if (!passwordRegex.hasMatch(password)) {
+      failedPasswordSignUpCriteria.add('The password must contain at least one special character.');
+    }
+
+    if (failedPasswordSignUpCriteria.isNotEmpty || failedEmailSignUpCriteria.isNotEmpty){
+      setState(() {
+        errorMessage = [
+          ...failedEmailSignUpCriteria,
+          ...failedPasswordSignUpCriteria,
+        ].join('\n');
+        _isSigning = false; // Stop the spinner
+      });
+      return;
+    }
+
     User? user = await _auth.signUpWithEmailAndPassword(email, password);
 
     if (user != null) {
