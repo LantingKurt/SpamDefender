@@ -1,4 +1,8 @@
+// Firebase Implementation
 import 'package:firebase_auth/firebase_auth.dart';
+
+// Toast Notif
+import 'package:spamdefender/global/common/toast.dart';
 
 class FirebaseAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -13,8 +17,23 @@ class FirebaseAuthService {
         password: password,
       );
       return credential.user;
-    } catch (e) {
-      print("Some error occured in signing up");
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        showToast(message: 'The email address is already in use.');
+      } else if (e.code == 'invalid-email') {
+        showToast(message: 'The email address is badly formatted.');
+      } else if (e.code == 'weak-password') {
+        // For 6 characters long only
+        showToast(message: 'The password is too weak.');
+      } else if (e.code == 'network-request-failed') {
+        showToast(
+          message:
+          'No network connection. Please connect to your internet and try again.',
+          fontSize: 15.0,
+        );
+      } else {
+        showToast(message: 'An error occurred: ${e.code}');
+      }
     }
     return null;
   }
@@ -29,8 +48,32 @@ class FirebaseAuthService {
         password: password,
       );
       return credential.user;
-    } catch (e) {
-      print("Some error occured in logging in");
+    } on FirebaseAuthException catch (e) {
+      print(e.code);
+      if (e.code == 'invalid-credential') {
+        // Invalid email or password
+        showToast(message: 'Invalid email or password. Please try again.');
+
+      } else if (e.code == 'invalid-email') {
+        showToast(
+          message: 'Wrong email format. Please try again.',
+          fontSize: 15,
+        );
+      } else if (e.code == 'user-disabled') {
+        // if user disabled on Firebase console
+        showToast(
+          message:
+              'The user account has been disabled. Reach out to your administrator and try again.',
+        );
+      } else if (e.code == 'network-request-failed') {
+        showToast(
+          message:
+              'No network connection. Please connect to your internet and try again.',
+          fontSize: 15,
+        );
+      } else {
+        showToast(message: 'An error occurred: ${e.code}');
+      }
     }
     return null;
   }

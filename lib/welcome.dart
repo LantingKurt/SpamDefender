@@ -5,12 +5,14 @@ import 'sign_up.dart';
 import 'log_in.dart';
 
 // WELCOME TO SPAMDEFENDER (HOME) //
-class Home extends StatelessWidget {
-  const Home({super.key});
+class WelcomeScreen extends StatelessWidget {
+  const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope<Object?>(
+        canPop: false,  // Prevents back navigation
+        child: Scaffold(
       backgroundColor: Color(0xFF050a30),
       body: Stack(
         children: [
@@ -85,6 +87,7 @@ class Home extends StatelessWidget {
           ),
         ], // children
       ),
+    ),
     );
   } // Widget build(BuildContext context)
 } //class Home extends StatelessWidget

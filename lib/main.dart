@@ -7,11 +7,13 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 // Firebase Implementation --------------------------------------------------------------
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 //import 'package:firebase_auth/firebase_auth.dart';
-//import 'package:spamdefender/firebase_auth_implementation/firebase_auth_services.dart';
+//import 'firebase_auth_services.dart';
 //----------------------------------------------------------------------------------------
 
+import 'package:spamdefender/global/common/toast.dart';
 // UI Screens -------------------------------
 import 'splash_screen.dart';
 
@@ -48,8 +50,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      locale: Locale('en'),
-      supportedLocales: [Locale('en'), Locale('es')],
+      builder: FToastBuilder(),
+      locale: const Locale('en', 'US'),
+      supportedLocales: [Locale('en'), Locale('US')],
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

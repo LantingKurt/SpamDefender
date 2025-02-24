@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+// UI Screens
 import 'welcome.dart';
 
 // SPLASH //
@@ -14,10 +16,12 @@ class _SplashState extends State<Splash> {
   void initState() {
     super.initState();
     Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => Home()),
-      );
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => WelcomeScreen()),
+        );
+      }
     });
   }
 
@@ -60,5 +64,5 @@ class _SplashState extends State<Splash> {
         ],
       ),
     );
-  } // Widget build(BuildContext context)
-} //_SplashState
+  }
+}

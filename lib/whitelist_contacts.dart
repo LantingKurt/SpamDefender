@@ -8,11 +8,13 @@ import 'package:spamdefender/firebase_auth_implementation/firebase_auth_services
 
 // WHITELIST CONTACTS //
 class WhitelistScreen extends StatefulWidget {
+  const WhitelistScreen({super.key});
+
   @override
-  _WhitelistScreenState createState() => _WhitelistScreenState();
+  WhitelistScreenState createState() => WhitelistScreenState();
 }
 
-class _WhitelistScreenState extends State<WhitelistScreen> {
+class WhitelistScreenState extends State<WhitelistScreen> {
   final List<Map<String, String>> whitelist = [
     {'name': 'Elle', 'phone': '123-456-7890'},
     {'name': 'Kurt', 'phone': '987-654-3210'},

@@ -1,313 +1,342 @@
+// Flutter Dependencies
 import 'package:flutter/material.dart';
 
 // Firebase Implementation
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:spamdefender/firebase_auth_implementation/firebase_auth_services.dart';
 
+// UI Screens
+import 'welcome.dart';
+import 'home_page.dart';
+
 // SIGN UP //
 class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
+
   @override
-  _SignupScreenState createState() => _SignupScreenState();
+  SignupScreenState createState() => SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class SignupScreenState extends State<SignupScreen> {
   final FirebaseAuthService _auth = FirebaseAuthService();
 
   bool isButtonActive = false;
+  bool _isSigning = false;
   String errorMessage = '';
 
-  TextEditingController emailController = TextEditingController();
-  TextEditingController usernameController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-  TextEditingController confirmpasswordController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _usernameController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
+  TextEditingController _confirmpasswordController = TextEditingController();
 
   @override
   void dispose() {
-    usernameController.dispose();
-    emailController.dispose();
-    passwordController.dispose();
+    _usernameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmpasswordController.dispose();
     super.dispose();
   }
-
-  final Map<String, String> userDatabase = {};
 
   @override
   void initState() {
     super.initState();
 
-    emailController = TextEditingController();
-    usernameController = TextEditingController();
-    passwordController = TextEditingController();
-    confirmpasswordController = TextEditingController();
+    _emailController = TextEditingController();
+    _usernameController = TextEditingController();
+    _passwordController = TextEditingController();
+    _confirmpasswordController = TextEditingController();
 
-    emailController.addListener(_checkButtonState);
-    usernameController.addListener(_checkButtonState);
-    passwordController.addListener(_checkButtonState);
-    confirmpasswordController.addListener(_checkButtonState);
+    _emailController.addListener(_checkButtonState);
+    _usernameController.addListener(_checkButtonState);
+    _passwordController.addListener(_checkButtonState);
+    _confirmpasswordController.addListener(_checkButtonState);
   }
 
   void _checkButtonState() {
     setState(() {
       isButtonActive =
-          usernameController.text.isNotEmpty &&
-          passwordController.text.isNotEmpty &&
-          confirmpasswordController.text.isNotEmpty &&
-          emailController.text.isNotEmpty;
+          _usernameController.text.isNotEmpty &&
+          _passwordController.text.isNotEmpty &&
+          _confirmpasswordController.text.isNotEmpty &&
+          _emailController.text.isNotEmpty;
     });
   }
 
   void _handleSignUp() {
-    String enteredEmail = emailController.text;
-    String enteredUsername = usernameController.text;
-    String enteredPassword = passwordController.text;
-    String confirmedPassword = confirmpasswordController.text;
+    String enteredEmail = _emailController.text;
+    String enteredUsername = _usernameController.text;
+    String enteredPassword = _passwordController.text;
+    String confirmedPassword = _confirmpasswordController.text;
 
     if (enteredPassword != confirmedPassword) {
       setState(() {
         errorMessage = 'Passwords do not match';
       });
     } else {
-      setState(() {
-        if (userDatabase.containsKey(enteredEmail)) {
-          errorMessage = 'Email already exists';
-        } else if (userDatabase.containsKey(enteredUsername)) {
-          errorMessage = 'Username already exists';
-        } else {
-          userDatabase[enteredUsername] = enteredPassword;
-          errorMessage = 'Signed up';
-          print('signed in user:');
-          print(userDatabase);
-          _signUp();
-        }
-      });
+      _signUp();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false, // Prevents content shifting
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Positioned(
-              top: -300,
-              left: 87,
-              child: Image.asset(
-                'images/mainlogo.png',
-                width: MediaQuery.of(context).size.width * 0.6,
-                height: MediaQuery.of(context).size.height,
-                fit: BoxFit.contain,
-              ),
-            ),
-
-            Positioned(
-              top: 220.0,
-              left: 30.0,
-              child: Text(
-                'Create your Account',
-                style: TextStyle(
-                  color: Color(0xFF050a30),
-                  fontSize: 20,
-                  fontFamily: 'Mosafin',
-                ),
-              ),
-            ),
-
-            // Username Label
-            Positioned(
-              top: 255,
-              left: 30.0,
-              child: Text(
-                'Email',
-                style: TextStyle(
-                  color: Color(0xFF050a30),
-                  fontSize: 15,
-                  fontFamily: 'Mosafin',
-                ),
-              ),
-            ),
-
-            // Username TextField
-            Positioned(
-              top: 280,
-              left: 35.0,
-              right: 30.0,
-              child: TextField(
-                key: Key('emailField'),
-                // Added key here
-                controller: emailController,
-                textInputAction: TextInputAction.next,
-                onSubmitted: (value) {
-                  if (isButtonActive) _handleSignUp();
-                },
-                decoration: InputDecoration(
-                  hintText: 'Enter email',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-
-            Positioned(
-              top: 350,
-              left: 30.0,
-              child: Text(
-                'Username',
-                style: TextStyle(
-                  color: Color(0xFF050a30),
-                  fontSize: 15,
-                  fontFamily: 'Mosafin',
-                ),
-              ),
-            ),
-            Positioned(
-              top: 375,
-              left: 35.0,
-              right: 30.0,
-              child: TextField(
-                key: Key('usernameField'),
-                // Added key here
-                controller: usernameController,
-                textInputAction: TextInputAction.next,
-                onSubmitted: (value) {
-                  if (isButtonActive) _handleSignUp();
-                },
-                decoration: InputDecoration(
-                  hintText: 'Enter username',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-
-            // Password Label
-            Positioned(
-              top: 440.0,
-              left: 30.0,
-              child: Text(
-                'Password',
-                style: TextStyle(
-                  color: Color(0xFF050a30),
-                  fontSize: 15,
-                  fontFamily: 'Mosafin',
-                ),
-              ),
-            ),
-
-            // Password TextField
-            Positioned(
-              top: 470.0,
-              left: 35.0,
-              right: 30.0,
-              child: TextField(
-                key: Key('passwordField'),
-                // Added key here
-                controller: passwordController,
-                obscureText: true,
-                onSubmitted: (value) {
-                  if (isButtonActive) _handleSignUp();
-                },
-                decoration: InputDecoration(
-                  hintText: 'Enter password',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-
-            // Confirm Password Label
-            Positioned(
-              top: 540.0,
-              left: 30.0,
-              child: Text(
-                'Confirm password',
-                style: TextStyle(
-                  color: Color(0xFF050a30),
-                  fontSize: 15,
-                  fontFamily: 'Mosafin',
-                ),
-              ),
-            ),
-
-            // Password TextField
-            Positioned(
-              top: 565.0,
-              left: 35.0,
-              right: 30.0,
-              child: TextField(
-                key: Key('passwordField'),
-                // Added key here
-                controller: confirmpasswordController,
-                obscureText: true,
-                onSubmitted: (value) {
-                  if (isButtonActive) _handleSignUp();
-                },
-                decoration: InputDecoration(
-                  hintText: 'Confirm password',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-
-            // Sign-Up Button
-            Positioned(
-              bottom: 60.0,
-              left: 60.0,
-              right: 60.0,
-              child: OutlinedButton(
-                onPressed:
-                    isButtonActive
-                        ? () {
-                          _handleSignUp();
-                        }
-                        : null,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: isButtonActive ? Colors.white : Colors.grey,
-                  backgroundColor:
-                      isButtonActive ? Color(0xFF050a30) : Colors.grey[400],
-                  side: BorderSide(color: Color(0xFF050a30)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  minimumSize: Size(100, 45),
-                ),
-                child: Text('SIGN UP'),
-              ),
-            ),
-
-            // Error message display
-            if (errorMessage.isNotEmpty)
+    return PopScope(
+      canPop: false, // Prevents default back navigation
+      onPopInvokedWithResult: (bool didPop, Object? result) {
+        if (!didPop) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => WelcomeScreen()),
+          );
+        }
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false, // Prevents content shifting
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Stack(
+            children: [
               Positioned(
-                bottom: 30.0,
-                left: 60.0,
-                right: 60.0,
-                child: Text(
-                  errorMessage,
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
+                top: -300,
+                left: 87,
+                child: Image.asset(
+                  'images/mainlogo.png',
+                  width: MediaQuery.of(context).size.width * 0.6,
+                  height: MediaQuery.of(context).size.height,
+                  fit: BoxFit.contain,
                 ),
               ),
-          ],
+              Positioned(
+                top: 220.0,
+                left: 30.0,
+                child: Text(
+                  'Create your Account',
+                  style: TextStyle(
+                    color: Color(0xFF050a30),
+                    fontSize: 20,
+                    fontFamily: 'Mosafin',
+                  ),
+                ),
+              ),
+              // Email Label
+              Positioned(
+                top: 255,
+                left: 30.0,
+                child: Text(
+                  'Email',
+                  style: TextStyle(
+                    color: Color(0xFF050a30),
+                    fontSize: 15,
+                    fontFamily: 'Mosafin',
+                  ),
+                ),
+              ),
+              // Email TextField
+              Positioned(
+                top: 280,
+                left: 30.0,
+                right: 30.0,
+                child: TextField(
+                  key: Key('emailField'),
+                  // Added key here
+                  controller: _emailController,
+                  textInputAction: TextInputAction.next,
+                  onSubmitted: (value) {
+                    if (isButtonActive) _handleSignUp();
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Enter email',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              // Username Label
+              Positioned(
+                top: 350,
+                left: 30.0,
+                child: Text(
+                  'Username',
+                  style: TextStyle(
+                    color: Color(0xFF050a30),
+                    fontSize: 15,
+                    fontFamily: 'Mosafin',
+                  ),
+                ),
+              ),
+              // Username TextField
+              Positioned(
+                top: 375,
+                left: 30.0,
+                right: 30.0,
+                child: TextField(
+                  key: Key('usernameField'),
+                  // Added key here
+                  controller: _usernameController,
+                  textInputAction: TextInputAction.next,
+                  onSubmitted: (value) {
+                    if (isButtonActive) _handleSignUp();
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Enter username',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              // Password Label
+              Positioned(
+                top: 440.0,
+                left: 30.0,
+                child: Text(
+                  'Password',
+                  style: TextStyle(
+                    color: Color(0xFF050a30),
+                    fontSize: 15,
+                    fontFamily: 'Mosafin',
+                  ),
+                ),
+              ),
+              // Password TextField
+              Positioned(
+                top: 470.0,
+                left: 30.0,
+                right: 30.0,
+                child: TextField(
+                  key: Key('passwordField'),
+                  // Added key here
+                  controller: _passwordController,
+                  obscureText: true,
+                  onSubmitted: (value) {
+                    if (isButtonActive) _handleSignUp();
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Enter password',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              // Confirm Password Label
+              Positioned(
+                top: 540.0,
+                left: 30.0,
+                child: Text(
+                  'Confirm password',
+                  style: TextStyle(
+                    color: Color(0xFF050a30),
+                    fontSize: 15,
+                    fontFamily: 'Mosafin',
+                  ),
+                ),
+              ),
+              // Confirm Password TextField
+              Positioned(
+                top: 565.0,
+                left: 30.0,
+                right: 30.0,
+                child: TextField(
+                  key: Key('confirmpasswordField'),
+                  // Added key here
+                  controller: _confirmpasswordController,
+                  obscureText: true,
+                  onSubmitted: (value) {
+                    if (isButtonActive) _handleSignUp();
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Confirm password',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              // Sign-Up Button
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 30.0,
+                    vertical: 120.0,
+                  ),
+                  child: OutlinedButton(
+                    onPressed:
+                        isButtonActive
+                            ? () {
+                              _handleSignUp();
+                            }
+                            : null,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor:
+                          isButtonActive ? Colors.white : Colors.grey,
+                      backgroundColor:
+                          isButtonActive ? Color(0xFF050a30) : Colors.grey[400],
+                      side: BorderSide(color: Color(0xFF050a30)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      minimumSize: Size(1000, 45),
+                    ),
+                    child:
+                        _isSigning
+                            ? SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            )
+                            : Text('SIGN UP'),
+                  ),
+                ),
+              ),
+              // Error message display
+              if (errorMessage.isNotEmpty)
+                Positioned(
+                  bottom: 70.0,
+                  left: 60.0,
+                  right: 60.0,
+                  child: Text(
+                    errorMessage,
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // FUNCTION FOR SIGNING UP USER
+  // SIGN UP FIREBASE
   void _signUp() async {
-    String username = usernameController.text;
-    String email = emailController.text;
-    String password = passwordController.text;
+    setState(() {
+      _isSigning = true;
+      errorMessage = ''; // Clear any previous error messages
+    });
+
+    String username = _usernameController.text;
+    String email = _emailController.text;
+    String password = _passwordController.text;
 
     User? user = await _auth.signUpWithEmailAndPassword(email, password);
 
     if (user != null) {
       print("User is successfully created");
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen()),
+        );
+      }
     } else {
       print("User sign up failed");
+      setState(() {
+        errorMessage = 'Sign up failed. Please try again.';
+      });
     }
-  } // _signUp
-} // _SignupScreenState
+    setState(() {
+      _isSigning = false;
+    });
+  }
+}
