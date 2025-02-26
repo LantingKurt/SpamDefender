@@ -4,8 +4,7 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyApp extends StatelessWidget {  const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
     return  const MaterialApp(
@@ -58,6 +57,10 @@ class _SplashState extends State<Splash> {
   }
 }
 
+
+// HOME //
+
+
 class Home extends StatelessWidget {
   const Home({super.key});
   @override
@@ -104,7 +107,12 @@ class Home extends StatelessWidget {
               top: 420,
               left: 150,
               child: OutlinedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SignupScreen()),
+                  );
+                },
 
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Color(0xFF050a30),
@@ -121,6 +129,320 @@ class Home extends StatelessWidget {
   }
 
 }
+
+
+
+// SIGN UP //
+
+
+class SignupScreen extends StatefulWidget {
+  @override
+  _SignupScreenState createState() => _SignupScreenState();
+}
+
+class _SignupScreenState extends State<SignupScreen> {
+  bool isButtonActive = false;
+  String errorMessage = '';
+
+  late TextEditingController emailController;
+  late TextEditingController usernameController;
+  late TextEditingController passwordController;
+  late TextEditingController confirmpasswordController;
+
+  final Map<String, String> userDatabase = {};
+
+  @override
+  void initState() {
+    super.initState();
+
+    emailController = TextEditingController();
+    usernameController = TextEditingController();
+    passwordController = TextEditingController();
+    confirmpasswordController = TextEditingController();
+
+    emailController.addListener(_checkButtonState);
+    usernameController.addListener(_checkButtonState);
+    passwordController.addListener(_checkButtonState);
+    confirmpasswordController.addListener(_checkButtonState);
+  }
+
+  void _checkButtonState() {
+    setState(() {
+      isButtonActive = usernameController.text.isNotEmpty &&
+          passwordController.text.isNotEmpty &&
+          confirmpasswordController.text.isNotEmpty &&
+          emailController.text.isNotEmpty;
+    });
+  }
+
+  bool _isValidEmail(String email) {
+    final regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    return regex.hasMatch(email);
+  }
+
+  bool _isValidPassword(String password, String username) {
+    if (password.length < 12) return false;
+
+    bool hasUppercase = password.contains(RegExp(r'[A-Z]'));
+    bool hasLowercase = password.contains(RegExp(r'[a-z]'));
+    bool hasDigits = password.contains(RegExp(r'[0-9]'));
+    bool hasSpecialChars = password.contains(RegExp(r'[!@#\$%\^&\*\(\)_\+\-=,./<>?;:|{}]'));
+
+    bool isValid = (hasUppercase ? 1 : 0) +
+        (hasLowercase ? 1 : 0) +
+        (hasDigits ? 1 : 0) +
+        (hasSpecialChars ? 1 : 0) >=
+        3;
+
+    if (password.contains(username)) return false;
+
+    return isValid;
+  }
+
+  void _handleSignUp() {
+    String enteredEmail = emailController.text;
+    String enteredUsername = usernameController.text;
+    String enteredPassword = passwordController.text;
+    String confirmedPassword = confirmpasswordController.text;
+
+    if (!_isValidEmail(enteredEmail)) {
+      setState(() {
+        errorMessage = 'Invalid email format';
+      });
+    } else if (enteredPassword != confirmedPassword) {
+      setState(() {
+        errorMessage = 'Passwords do not match';
+      });
+    } else if (!_isValidPassword(enteredPassword, enteredUsername)) {
+      setState(() {
+        errorMessage = 'Weak password format.';
+      });
+    } else {
+      setState(() {
+        if (userDatabase.containsKey(enteredEmail)) {
+          errorMessage = 'Email already exists';
+        } else if (userDatabase.containsKey(enteredUsername)) {
+          errorMessage = 'Username already exists';
+        } else {
+          userDatabase[enteredUsername] = enteredPassword;
+          errorMessage = '';
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen()),
+          );
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      resizeToAvoidBottomInset: false, // Prevents content shifting
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Stack(
+          children: [
+
+            Positioned(
+              top: -300,
+              left: 87,
+              child: Image.asset('images/mainlogo.png', width: MediaQuery.of(context).size.width * 0.6, height: MediaQuery.of(context).size.height, fit: BoxFit.contain),
+            ),
+
+            Positioned(
+              top: 220.0,
+              left: 30.0,
+              child: Text(
+                'Create your Account',
+                style: TextStyle(
+                  color: Color(0xFF050a30),
+                  fontSize: 20,
+                  fontFamily: 'Mosafin',
+                ),
+              ),
+            ),
+
+            // Username Label
+            Positioned(
+              top: 255,
+              left: 30.0,
+              child: Text(
+                'Email',
+                style: TextStyle(
+                  color: Color(0xFF050a30),
+                  fontSize: 15,
+                  fontFamily: 'Mosafin',
+                ),
+              ),
+            ),
+
+            // Username TextField
+            Positioned(
+              top: 280,
+              left: 35.0,
+              right: 30.0,
+              child: TextField(
+                key: Key('emailField'), // Added key here
+                controller: emailController,
+                textInputAction: TextInputAction.next,
+                onSubmitted: (value) {
+                  if (isButtonActive) _handleSignUp();
+                },
+                decoration: InputDecoration(
+                  hintText: 'Enter email',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+
+            Positioned(
+              top: 350,
+              left: 30.0,
+              child: Text(
+                'Username',
+                style: TextStyle(
+                  color: Color(0xFF050a30),
+                  fontSize: 15,
+                  fontFamily: 'Mosafin',
+                ),
+              ),
+            ),
+            Positioned(
+              top: 375,
+              left: 35.0,
+              right: 30.0,
+              child: TextField(
+                key: Key('usernameField'), // Added key here
+                controller: usernameController,
+                textInputAction: TextInputAction.next,
+                onSubmitted: (value) {
+                  if (isButtonActive) _handleSignUp();
+                },
+                decoration: InputDecoration(
+                  hintText: 'Enter username',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+
+            // Password Label
+            Positioned(
+              top: 440.0,
+              left: 30.0,
+              child: Text(
+                'Password',
+                style: TextStyle(
+                  color: Color(0xFF050a30),
+                  fontSize: 15,
+                  fontFamily: 'Mosafin',
+                ),
+              ),
+            ),
+
+            // Password TextField
+            Positioned(
+              top: 470.0,
+              left: 35.0,
+              right: 30.0,
+              child: TextField(
+                key: Key('passwordField'), // Added key here
+                controller: passwordController,
+                obscureText: true,
+                onSubmitted: (value) {
+                  if (isButtonActive) _handleSignUp();
+                },
+                decoration: InputDecoration(
+                  hintText: 'Enter password',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+
+            // Confirm Password Label
+            Positioned(
+              top: 540.0,
+              left: 30.0,
+              child: Text(
+                'Confirm password',
+                style: TextStyle(
+                  color: Color(0xFF050a30),
+                  fontSize: 15,
+                  fontFamily: 'Mosafin',
+                ),
+              ),
+            ),
+
+            // Password TextField
+            Positioned(
+              top: 565.0,
+              left: 35.0,
+              right: 30.0,
+              child: TextField(
+                key: Key('passwordField'), // Added key here
+                controller: confirmpasswordController,
+                obscureText: true,
+                onSubmitted: (value) {
+                  if (isButtonActive) _handleSignUp();
+                },
+                decoration: InputDecoration(
+                  hintText: 'Confirm password',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+
+            // Sign-Up Button
+            Positioned(
+              bottom: 70.0,
+              left: 60.0,
+              right: 60.0,
+              child: OutlinedButton(
+                onPressed: isButtonActive
+                    ? () {
+                  _handleSignUp();
+                }
+                    : null,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: isButtonActive ? Colors.white : Colors.grey,
+                  backgroundColor: isButtonActive ? Color(0xFF050a30) : Colors.grey[400],
+                  side: BorderSide(color: Color(0xFF050a30)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  minimumSize: Size(100, 45),
+                ),
+                child: Text('SIGN UP'),
+              ),
+            ),
+
+            // Error message display
+            if (errorMessage.isNotEmpty)
+              Positioned(
+                bottom: 30.0,
+                left: 60.0,
+                right: 60.0,
+                child: Text(
+                  errorMessage,
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+
+
+// LOG IN //
 
 
 class LoginScreen extends StatefulWidget {
@@ -193,7 +515,6 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-
             Positioned(
               top: -300,
               left: 87,
@@ -230,7 +551,7 @@ class _LoginScreenState extends State<LoginScreen> {
             // Username TextField
             Positioned(
               top: 320,
-              left: 30.0,
+              left: 35.0,
               right: 30.0,
               child: TextField(
                 key: Key('usernameField'), // Added key here
@@ -263,7 +584,7 @@ class _LoginScreenState extends State<LoginScreen> {
             // Password TextField
             Positioned(
               top: 430.0,
-              left: 30.0,
+              left: 35.0,
               right: 30.0,
               child: TextField(
                 key: Key('passwordField'), // Added key here
@@ -341,8 +662,6 @@ class _LoginScreenState extends State<LoginScreen> {
 }
 
 
-
-
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -365,7 +684,7 @@ class HomeScreen extends StatelessWidget {
                   .height, fit: BoxFit.contain),
             ),
             Positioned(
-              top: -50,
+              top: -85,
               left: 20,
               child: Image.asset('images/search.png', width: MediaQuery
                   .of(context)
@@ -373,10 +692,10 @@ class HomeScreen extends StatelessWidget {
                   .width * 0.55, height: MediaQuery
                   .of(context)
                   .size
-                  .height * 0.5, fit: BoxFit.contain),
+                  .height * 0.55, fit: BoxFit.contain),
             ),
             Positioned(
-              bottom: -400,
+              bottom: -380,
               left: 0,
               child: Image.asset('images/minibar.png', width: MediaQuery
                   .of(context)
@@ -388,7 +707,7 @@ class HomeScreen extends StatelessWidget {
             ),
 
             Positioned(
-              top: -80,
+              top: -90,
               left: 12,
               child: Image.asset('images/allmessages.png', width: MediaQuery
                   .of(context)
@@ -398,13 +717,45 @@ class HomeScreen extends StatelessWidget {
                   .size
                   .height , fit: BoxFit.contain),
             ),
-            Align(
-              alignment: Alignment(-0.89, 0.40), // Adjust as needed
-              child: Image.asset(
-                'images/safemessages.png',
-                width: MediaQuery.of(context).size.width * 0.30,
-                height: MediaQuery.of(context).size.height * 0.4,
-                fit: BoxFit.contain,
+            Positioned(
+              top: 100,
+              left: 12,
+              child: Image.asset('images/spammessages.png', width: MediaQuery
+                  .of(context)
+                  .size
+                  .width * 0.45 , height: MediaQuery
+                  .of(context)
+                  .size
+                  .height , fit: BoxFit.contain),
+            ),
+            Positioned(
+              top: 20,
+              right: 12,
+              child: Image.asset('images/safemessages.png', width: MediaQuery
+                  .of(context)
+                  .size
+                  .width * 0.45 , height: MediaQuery
+                  .of(context)
+                  .size
+                  .height * 1.3 , fit: BoxFit.contain),
+            ),
+            Positioned(
+              bottom: 5,
+              right: 50,
+              child: IconButton(
+                icon: Icon(
+                  Icons.bookmark_border
+
+                  ,
+                  color: Colors.white,
+                  size: 40.0,
+                ),
+                onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => WhitelistScreen()),
+                );
+              },
               ),
             ),
           ]
@@ -413,6 +764,241 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
+class WhitelistScreen extends StatefulWidget {
+  @override
+  _WhitelistScreenState createState() => _WhitelistScreenState();
+}
+
+class _WhitelistScreenState extends State<WhitelistScreen> {
+  final List<Map<String, String>> whitelist = [
+    {'name': 'Elle', 'phone': '123-456-7890'},
+    {'name': 'Kurt', 'phone': '987-654-3210'},
+    {'name': 'Wana', 'phone': '555-123-4567'},
+    {'name': 'Anton', 'phone': '444-234-5678'},
+    {'name': 'Rei Germar', 'phone': '333-345-6789'},
+    {'name': 'Ella Gatchalian', 'phone': '222-456-7891'},
+    {'name': 'Lily Cruz', 'phone': '112-567-8901'},
+    {'name': 'Mica Millano', 'phone': '113-567-8901'},
+    {'name': 'Andrea Brillantes', 'phone': '114-567-8901'},
+    {'name': 'Janelle Mendoza', 'phone': '115-567-8901'},
+    {'name': 'Joana Murillo', 'phone': '116-567-8901'},
+    {'name': 'Nicholas Lanting', 'phone': '117-567-8901'},
+    {'name': 'Ton Chio', 'phone': '118-567-8901'},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    whitelist.sort((a, b) => a['name']!.compareTo(b['name']!));
+
+    Map<String, List<Map<String, String>>> groupedContacts = {};
+
+    for (var contact in whitelist) {
+      String firstLetter = contact['name']![0].toUpperCase();
+      if (!groupedContacts.containsKey(firstLetter)) {
+        groupedContacts[firstLetter] = [];
+      }
+      groupedContacts[firstLetter]!.add(contact);
+    }
+
+    List<String> sectionHeaders = groupedContacts.keys.toList()..sort();
+
+    int itemCount = sectionHeaders.fold<int>(
+      0,
+          (sum, letter) => sum + 1 + groupedContacts[letter]!.length,
+    );
+
+    return Scaffold(
+      resizeToAvoidBottomInset: false, // Prevents content shifting
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          Positioned(
+            top: -350,
+            left: 0,
+            child: Image.asset(
+              'images/minibartop.png',
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              fit: BoxFit.contain,
+            ),
+          ),
+          Positioned(
+            top: 37.0,
+            left: 10,
+            child: Row(
+              children: [
+                // Back arrow icon button
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios, color: Color(0xddffad49)), // Back arrow icon
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                // Home text
+                Text(
+                  'Home',
+                  style: TextStyle(
+                    color: Color(0xffffffff),
+                    fontSize: 23,
+                    fontFamily: 'Mosafin',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            top: 80.0,
+            left: 25.0,
+            child: Text(
+              'Whitelisted',
+              style: TextStyle(
+                color: Color(0xffffffff),
+                fontSize: 25,
+                fontFamily: 'Mosafin',
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 140.0,
+            left: 10,
+            right: 30.0,
+            child: TextField(
+              key: Key('Search by name or number'),
+              decoration: InputDecoration(
+                hintText: 'Search by name or number',
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.grey,
+                    width: 1.5,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.grey,
+                    width: 1.5,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.blue,
+                    width: 1.5,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Color(0xFF050a30),
+                ),
+                contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+                filled: true,
+                fillColor: Colors.white,
+                isDense: true,
+                alignLabelWithHint: true,
+                hintStyle: TextStyle(color: Colors.grey[400]),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 200.0,
+            left: 15.0,
+            right: 15.0,
+            child: Card(
+              elevation: 0,
+              child: ListTile(
+                leading: Icon(
+                  Icons.person,
+                  size: 60.0,
+                ),
+                title: Text(
+                  'My Name',
+                  style: TextStyle(
+                    fontFamily: 'Mosafin',
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                subtitle: Text('000-000-0000', style: TextStyle(
+                  fontFamily: 'Mosafin',
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+                ),
+              ),
+            ),
+          ),
+
+          SafeArea(
+            child: Padding(
+              padding: EdgeInsets.only(top: 260),
+              child: ListView.builder(
+                itemCount: itemCount,
+                itemBuilder: (context, index) {
+                  int sectionIndex = 0;
+                  String letter = '';
+                  List<Map<String, String>> contacts = [];
+
+                  for (var section in sectionHeaders) {
+                    int currentSectionItemCount = 1 + groupedContacts[section]!.length; // 1 for the header + contacts
+
+                    if (index < sectionIndex + currentSectionItemCount) {
+                      letter = section;
+                      contacts = groupedContacts[section]!;
+                      break;
+                    }
+
+                    sectionIndex += currentSectionItemCount;
+                  }
+
+                  if (index == sectionIndex) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            letter,
+                            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                          ),
+                          Container(
+                            height: 2,
+                            color: Color(0xddffad49),
+                            margin: EdgeInsets.symmetric(vertical: 5.0),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else if (index > sectionIndex) {
+                    int contactIndex = index - sectionIndex - 1;
+                    final contact = contacts[contactIndex];
+                    return ListTile(
+                      leading: Icon(Icons.person),
+                      title: Text(contact['name']!),
+                      subtitle: Text(contact['phone']!),
+                      trailing: IconButton(
+                        icon: Icon(Icons.more_horiz),
+                        onPressed: () {
+                        },
+                      ),
+                      onTap: () {
+                      },
+                    );
+                  }
+
+                  return SizedBox.shrink();
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 
 
