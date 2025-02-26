@@ -36,7 +36,8 @@ dependencies:
   firebase_storage: ^12.4.3 # For storing
   firebase_app_check: ^0.3.2+3 # Verification to use Firebase by the app
   fluttertoast: ^8.2.12         # For Firebase exception appwrite_error_handling:
-  mockito: ^5.4.5           # Mock test cases fsor Firebase
+  mockito: ^5.4.5               # Mock test cases fsor Firebase
+  firebase_auth_mocks: ^0.14.1  # Mock test cases fsor Firebase
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

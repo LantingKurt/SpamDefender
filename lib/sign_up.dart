@@ -104,7 +104,7 @@ class SignupScreenState extends State<SignupScreen> {
           child: Stack(
             children: [
               Positioned(
-                top: -300,
+                top: -330,
                 left: 87,
                 child: Image.asset(
                   'images/mainlogo.png',
@@ -114,7 +114,7 @@ class SignupScreenState extends State<SignupScreen> {
                 ),
               ),
               Positioned(
-                top: 220.0,
+                top: 220.0 - 50,
                 left: 30.0,
                 child: Text(
                   'Create your Account',
@@ -127,7 +127,7 @@ class SignupScreenState extends State<SignupScreen> {
               ),
               // Email Label
               Positioned(
-                top: 255,
+                top: 255 - 50,
                 left: 30.0,
                 child: Text(
                   'Email',
@@ -140,7 +140,7 @@ class SignupScreenState extends State<SignupScreen> {
               ),
               // Email TextField
               Positioned(
-                top: 280,
+                top: 280 - 50,
                 left: 30.0,
                 right: 30.0,
                 child: TextField(
@@ -159,7 +159,7 @@ class SignupScreenState extends State<SignupScreen> {
               ),
               // Username Label
               Positioned(
-                top: 350,
+                top: 350 - 50,
                 left: 30.0,
                 child: Text(
                   'Username',
@@ -172,7 +172,7 @@ class SignupScreenState extends State<SignupScreen> {
               ),
               // Username TextField
               Positioned(
-                top: 375,
+                top: 375 - 50,
                 left: 30.0,
                 right: 30.0,
                 child: TextField(
@@ -191,7 +191,7 @@ class SignupScreenState extends State<SignupScreen> {
               ),
               // Password Label
               Positioned(
-                top: 440.0,
+                top: 440.0 - 50,
                 left: 30.0,
                 child: Text(
                   'Password',
@@ -204,7 +204,7 @@ class SignupScreenState extends State<SignupScreen> {
               ),
               // Password TextField
               Positioned(
-                top: 470.0,
+                top: 470.0 - 50,
                 left: 30.0,
                 right: 30.0,
                 child: TextField(
@@ -223,7 +223,7 @@ class SignupScreenState extends State<SignupScreen> {
               ),
               // Confirm Password Label
               Positioned(
-                top: 540.0,
+                top: 540.0 - 50,
                 left: 30.0,
                 child: Text(
                   'Confirm password',
@@ -236,7 +236,7 @@ class SignupScreenState extends State<SignupScreen> {
               ),
               // Confirm Password TextField
               Positioned(
-                top: 565.0,
+                top: 565.0 - 50,
                 left: 30.0,
                 right: 30.0,
                 child: TextField(
@@ -259,7 +259,7 @@ class SignupScreenState extends State<SignupScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 30.0,
-                    vertical: 120.0,
+                    vertical: 170.0,
                   ),
                   child: OutlinedButton(
                     onPressed:
@@ -295,9 +295,9 @@ class SignupScreenState extends State<SignupScreen> {
               // Error message display
               if (errorMessage.isNotEmpty)
                 Positioned(
-                  bottom: 70.0,
-                  left: 60.0,
-                  right: 60.0,
+                  bottom: 25.0,
+                  left: 10.0,
+                  right: 10.0,
                   child: Text(
                     errorMessage,
                     style: TextStyle(
@@ -347,15 +347,16 @@ class SignupScreenState extends State<SignupScreen> {
     // ❌ user@domain..com (Double dot issue)
 
     final List<String> failedEmailSignUpCriteria = [];
-    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
 
-// Check if email matches the valid format
+    // Check if email matches the valid format
     if (!emailRegex.hasMatch(email)) {
       failedEmailSignUpCriteria.add(
-          'Email must be in a valid format (e.g., test.email@example.com).');
+        'Email must be in a valid format (e.g., spamdefender@gmail.com).',
+      );
     }
-
-
 
     // Must satisfy the following criterias:
     //   Regex:
@@ -369,7 +370,7 @@ class SignupScreenState extends State<SignupScreen> {
     //   Invalid Passwords:
     //
     //   short1A!
-    //   Issue: Less than 12 characters.
+    //   Issue: Less than 6 characters.
     //
     //   alllowercase123!
     //   Issue: Missing uppercase letter.
@@ -383,46 +384,70 @@ class SignupScreenState extends State<SignupScreen> {
     //   NoSpecialChar123
     //   Issue: Missing special character.
 
+    //Set string output for failed password
     final List<String> failedPasswordSignUpCriteria = [];
-    final passwordRegex = RegExp(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{12,}$');
+    final passwordRegex = RegExp(
+      r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{12,}$',
+    );
 
     // Check password length
     if (password.length < 6) {
-      failedPasswordSignUpCriteria.add('The password must be at least 6 characters long.');
+      failedPasswordSignUpCriteria.add(
+        'be at least 6 characters long',
+      );
     }
     // Check for at least one uppercase letter
     if (!RegExp(r'[A-Z]').hasMatch(password)) {
-      failedPasswordSignUpCriteria.add('The password must contain at least one uppercase letter.');
+      failedPasswordSignUpCriteria.add(
+        'contain at least one uppercase letter',
+      );
     }
     // Check for at least one lowercase letter
     if (!RegExp(r'[a-z]').hasMatch(password)) {
-      failedPasswordSignUpCriteria.add('The password must contain at least one lowercase letter.');
+      failedPasswordSignUpCriteria.add(
+        'contain at least one lowercase letter',
+      );
     }
     // Check for at least one digit
     if (!RegExp(r'\d').hasMatch(password)) {
-      failedPasswordSignUpCriteria.add('The password must contain at least one digit.');
+      failedPasswordSignUpCriteria.add(
+        'contain at least one digit',
+      );
     }
     // Check for at least one special character
     if (!passwordRegex.hasMatch(password)) {
-      failedPasswordSignUpCriteria.add('The password must contain at least one special character.');
+      failedPasswordSignUpCriteria.add(
+        'contain at least one special character',
+      );
     }
 
-    // if (failedPasswordSignUpCriteria.isNotEmpty || failedEmailSignUpCriteria.isNotEmpty){
-    //   setState(() {
-    //     errorMessage = [
-    //       ...failedEmailSignUpCriteria,
-    //       ...failedPasswordSignUpCriteria,
-    //       'Sign up failed. Please try again.'
-    //     ].join('\n');
-    //     _isSigning = false; // Stop the spinner
-    //   });
-    //   return;
-    // }
+    if (failedEmailSignUpCriteria.isNotEmpty) {
+      setState(() {
+        errorMessage = [
+          'Sign up failed. Please try again.',
+          '',
+          ...failedEmailSignUpCriteria,
+        ].join('\n');
+        _isSigning = false; // Stop the spinner
+      });
+      return;
+    }
 
-
+    if (failedPasswordSignUpCriteria.isNotEmpty) {
+      setState(() {
+        errorMessage = [
+          'Sign up failed. Please try again.\n',
+          'The password must',
+          ...failedPasswordSignUpCriteria,
+          '.'
+        ].join(' ');
+        _isSigning = false; // Stop the spinner
+      });
+      return;
+    }
 
     if (user != null) {
-      print("User is successfully created");
+      print("User successfully created");
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -432,15 +457,9 @@ class SignupScreenState extends State<SignupScreen> {
     } else {
       print("User sign up failed");
       setState(() {
-        errorMessage = [
-          ...failedEmailSignUpCriteria,
-          ...failedPasswordSignUpCriteria,
-          'Sign up failed. Please try again.'
-        ].join('\n');
+        errorMessage = 'Sign up failed. Please try again.';
       });
     }
-    setState(() {
-      _isSigning = false;
-    });
+
   }
 }
