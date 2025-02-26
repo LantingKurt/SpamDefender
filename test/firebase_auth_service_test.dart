@@ -1,36 +1,38 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/mockito.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:spamdefender/global/common/toast.dart';
+import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:spamdefender/firebase_auth_implementation/firebase_auth_services.dart';
-import 'mocks.mocks.dart'; // Import generated mocks
 
 void main() {
   late FirebaseAuthService authService;
   late MockFirebaseAuth mockFirebaseAuth;
-  late MockUserCredential mockUserCredential;
-  late MockUser mockUser;
 
   setUp(() {
-    mockFirebaseAuth = MockFirebaseAuth();
-    mockUserCredential = MockUserCredential();
-    mockUser = MockUser();
-    authService = FirebaseAuthService(); // Your actual service
+    // Create a mock user
+    final mockUser = MockUser(
+      isAnonymous: false,
+      uid: 'someuid',
+      email: 'test@example.com',
+      displayName: 'Test User',
+    );
+
+    // Initialize MockFirebaseAuth with the mock user
+    mockFirebaseAuth = MockFirebaseAuth(mockUser: mockUser);
+
+    // Inject the mock FirebaseAuth instance into your auth service
+    authService = FirebaseAuthService(firebaseAuth: mockFirebaseAuth);
   });
 
-  test('Sign up successfully returns a user', () async {
-    when(mockFirebaseAuth.createUserWithEmailAndPassword(
-      email: "test@example.com",
-      password: "StrongPass123",
-    )).thenAnswer((_) async => mockUserCredential);
+  group('FirebaseAuthService', () {
+    test('Sign up successfully returns a user', () async {
+      // Act: Attempt to sign up with email and password
+      final result = await authService.signUpWithEmailAndPassword(
+        'test@example.com',
+        'Nintendo123.',
+      );
 
-    when(mockUserCredential.user).thenReturn(mockUser);
-
-    final result = await authService.signUpWithEmailAndPassword("test@example.com", "StrongPass123");
-
-    expect(result, equals(mockUser));
+      // Assert: Verify the result is not null and contains the expected email
+      expect(result, isNotNull);
+      expect(result?.email, equals('test@example.com'));
+    });
   });
-
-
-
 }
