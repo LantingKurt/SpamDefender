@@ -21,6 +21,7 @@ class LoginScreenState extends State<LoginScreen> {
   final FirebaseAuthService _auth = FirebaseAuthService();
   bool isButtonActive = false;
   bool _isLoggingin = false;
+  bool _isPasswordVisible = false;
   String errorMessage = '';
 
   final TextEditingController _emailController = TextEditingController();
@@ -96,7 +97,7 @@ class LoginScreenState extends State<LoginScreen> {
                 top: 290,
                 left: 30.0,
                 child: Text(
-                  'Username',
+                  'Email',
                   style: TextStyle(
                     color: Color(0xFF050a30),
                     fontSize: 15,
@@ -116,7 +117,7 @@ class LoginScreenState extends State<LoginScreen> {
                     if (isButtonActive) _handleLogin();
                   },
                   decoration: InputDecoration(
-                    hintText: 'Enter username',
+                    hintText: 'Enter email',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -124,6 +125,7 @@ class LoginScreenState extends State<LoginScreen> {
               Positioned(
                 top: 400.0,
                 left: 30.0,
+                right: 30.0,
                 child: Text(
                   'Password',
                   style: TextStyle(
@@ -140,28 +142,66 @@ class LoginScreenState extends State<LoginScreen> {
                 child: TextField(
                   key: Key('passwordField'),
                   controller: _passwordController,
-                  obscureText: true,
+                  obscureText: !_isPasswordVisible,
                   onSubmitted: (value) {
                     if (isButtonActive) _handleLogin();
                   },
                   decoration: InputDecoration(
                     hintText: 'Enter password',
                     border: OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isPasswordVisible = !_isPasswordVisible;
+                        });
+                      },
+                    ),
                   ),
                 ),
               ),
-              Positioned(
-                top: 410.0,
-                right: 35.0,
-                child: Text(
+              Align(
+                alignment: Alignment.topLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 485.0, left: 20.0),
+                  child: Row(
+                    children: [
+                      Checkbox(
+                        value: _isPasswordVisible,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            _isPasswordVisible = value ?? false;
+                          });
+                        },
+                      ),
+                      Text('Show Password',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontFamily: 'Mosafin',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+                Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 205.0, right: 30.0),
+                  child: Text(
                   'Forget password?',
                   style: TextStyle(
-                    color: Color(0xffffffff),
+                    color: Colors.white,
                     fontSize: 15,
                     fontFamily: 'Mosafin',
                   ),
+                  ),
                 ),
-              ),
+                ),
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(

@@ -50,7 +50,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      builder: FToastBuilder(),
       locale: const Locale('en', 'US'),
       supportedLocales: [Locale('en'), Locale('US')],
       localizationsDelegates: [
