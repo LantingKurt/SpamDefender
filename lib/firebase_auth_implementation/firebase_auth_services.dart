@@ -1,6 +1,9 @@
 // Firebase Implementation
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
 // Toast Notif
 import 'package:spamdefender/global/common/toast.dart';
 
@@ -28,7 +31,7 @@ class FirebaseAuthService {
       } else if (e.code == 'network-request-failed') {
         showToast(
           message:
-          'No network connection. Please connect to your internet and try again.',
+              'No network connection. Please connect to your internet and try again.',
           fontSize: 15.0,
         );
       } else {
@@ -53,7 +56,6 @@ class FirebaseAuthService {
       if (e.code == 'invalid-credential') {
         // Invalid email or password
         showToast(message: 'Invalid email or password. Please try again.');
-
       } else if (e.code == 'invalid-email') {
         showToast(
           message: 'Wrong email format. Please try again.',

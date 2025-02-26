@@ -59,7 +59,14 @@ class SignupScreenState extends State<SignupScreen> {
           _usernameController.text.isNotEmpty &&
           _passwordController.text.isNotEmpty &&
           _confirmpasswordController.text.isNotEmpty &&
-          _emailController.text.isNotEmpty;
+          _emailController.text.isNotEmpty &&
+          _passwordController.text == _confirmpasswordController.text;
+
+      if (_passwordController.text != _confirmpasswordController.text) {
+        errorMessage = 'Passwords do not match';
+      } else {
+        errorMessage = '';
+      }
     });
   }
 
