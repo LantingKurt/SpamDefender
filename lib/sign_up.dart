@@ -9,6 +9,8 @@ import 'package:spamdefender/firebase_auth_implementation/firebase_auth_services
 import 'welcome.dart';
 import 'home_page.dart';
 
+import 'validation_utils.dart';
+
 // SIGN UP //
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -71,6 +73,11 @@ class SignupScreenState extends State<SignupScreen> {
   }
 
   void _handleSignUp() {
+        setState(() {
+      _isSigning = true;
+      errorMessage = ''; // Clear any previous error messages
+    });
+
     String enteredEmail = _emailController.text;
     String enteredUsername = _usernameController.text;
     String enteredPassword = _passwordController.text;
@@ -80,9 +87,37 @@ class SignupScreenState extends State<SignupScreen> {
       setState(() {
         errorMessage = 'Passwords do not match';
       });
-    } else {
-      _signUp();
+    } 
+
+    final failedEmailSignUpCriteria = ValidationUtils.validateEmail(enteredEmail);
+    final failedPasswordSignUpCriteria = ValidationUtils.validatePassword(enteredPassword);
+
+    if (failedEmailSignUpCriteria.isNotEmpty) {
+      setState(() {
+        errorMessage = [
+          'Sign up failed. Please try again.',
+          '',
+          ...failedEmailSignUpCriteria,
+        ].join('\n');
+        _isSigning = false; // Stop the spinner
+      });
+      return;
     }
+
+    if (failedPasswordSignUpCriteria.isNotEmpty) {
+      setState(() {
+        errorMessage = [
+          'Sign up failed. Please try again.\n',
+          'The password must',
+          ...failedPasswordSignUpCriteria,
+          '.'
+        ].join(' ');
+        _isSigning = false; // Stop the spinner
+      });
+      return;
+    }
+
+    _signUp();
   }
 
   @override
@@ -326,125 +361,8 @@ class SignupScreenState extends State<SignupScreen> {
     String email = _emailController.text;
     String password = _passwordController.text;
 
+
     User? user = await _auth.signUpWithEmailAndPassword(email, password);
-
-    // Wrong email format
-    // Regex:
-    // ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
-    //
-    // Accepted:
-    // ✔ test.email@example.com
-    // ✔ user.name+tag@sub.domain.co.uk
-    // ✔ 123456789@domain.io
-    // ✔ first.last@company.org
-    // ✔ email@hyphen-domain.com
-    //
-    // Rejected:
-    // ❌ plainaddress (No @)
-    // ❌ @missingusername.com (Missing username)
-    // ❌ user@.com (Invalid domain)
-    // ❌ user@domain (No top-level domain)
-    // ❌ user@domain..com (Double dot issue)
-
-    final List<String> failedEmailSignUpCriteria = [];
-    final emailRegex = RegExp(
-      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-    );
-
-    // Check if email matches the valid format
-    if (!emailRegex.hasMatch(email)) {
-      failedEmailSignUpCriteria.add(
-        'Email must be in a valid format (e.g., spamdefender@gmail.com).',
-      );
-    }
-
-    // Must satisfy the following criterias:
-    //   Regex:
-    //   ^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{12,}$
-    //
-    //   Valid Passwords:
-    //   StrongPass1!@#
-    //   ComplexPwd2025$%
-    //   MySecure#Password123
-    //
-    //   Invalid Passwords:
-    //
-    //   short1A!
-    //   Issue: Less than 6 characters.
-    //
-    //   alllowercase123!
-    //   Issue: Missing uppercase letter.
-    //
-    //   ALLUPPERCASE123!
-    //   Issue: Missing lowercase letter.
-    //
-    //   NoNumbers!@#
-    //   Issue: Missing digit.
-    //
-    //   NoSpecialChar123
-    //   Issue: Missing special character.
-
-    //Set string output for failed password
-    final List<String> failedPasswordSignUpCriteria = [];
-    final passwordRegex = RegExp(
-      r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{12,}$',
-    );
-
-    // Check password length
-    if (password.length < 6) {
-      failedPasswordSignUpCriteria.add(
-        'be at least 6 characters long',
-      );
-    }
-    // Check for at least one uppercase letter
-    if (!RegExp(r'[A-Z]').hasMatch(password)) {
-      failedPasswordSignUpCriteria.add(
-        'contain at least one uppercase letter',
-      );
-    }
-    // Check for at least one lowercase letter
-    if (!RegExp(r'[a-z]').hasMatch(password)) {
-      failedPasswordSignUpCriteria.add(
-        'contain at least one lowercase letter',
-      );
-    }
-    // Check for at least one digit
-    if (!RegExp(r'\d').hasMatch(password)) {
-      failedPasswordSignUpCriteria.add(
-        'contain at least one digit',
-      );
-    }
-    // Check for at least one special character
-    if (!passwordRegex.hasMatch(password)) {
-      failedPasswordSignUpCriteria.add(
-        'contain at least one special character',
-      );
-    }
-
-    if (failedEmailSignUpCriteria.isNotEmpty) {
-      setState(() {
-        errorMessage = [
-          'Sign up failed. Please try again.',
-          '',
-          ...failedEmailSignUpCriteria,
-        ].join('\n');
-        _isSigning = false; // Stop the spinner
-      });
-      return;
-    }
-
-    if (failedPasswordSignUpCriteria.isNotEmpty) {
-      setState(() {
-        errorMessage = [
-          'Sign up failed. Please try again.\n',
-          'The password must',
-          ...failedPasswordSignUpCriteria,
-          '.'
-        ].join(' ');
-        _isSigning = false; // Stop the spinner
-      });
-      return;
-    }
 
     if (user != null) {
       print("User successfully created");
@@ -458,6 +376,7 @@ class SignupScreenState extends State<SignupScreen> {
       print("User sign up failed");
       setState(() {
         errorMessage = 'Sign up failed. Please try again.';
+         _isSigning = false;
       });
     }
 
