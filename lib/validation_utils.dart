@@ -15,6 +15,16 @@ class ValidationUtils {
     return failedEmailSignUpCriteria;
   }
 
+  static List<String> validateUsername(String username) {
+    final List<String> failedUsernameSignUpCriteria = [];
+
+    if(username.length > 30){
+      failedUsernameSignUpCriteria.add('Username must be 30 characters or less');
+    }
+
+    return failedUsernameSignUpCriteria;
+  }
+
   static List<String> validatePassword(String password) {
     final List<String> failedPasswordSignUpCriteria = [];
     final passwordRegex = RegExp(
@@ -24,6 +34,11 @@ class ValidationUtils {
     // Check password length
     if (password.length < 6) {
       failedPasswordSignUpCriteria.add('be at least 6 characters long');
+    }
+
+    // check password length maximum
+    if (password.length > 100) {
+      failedPasswordSignUpCriteria.add('be 100 characters or less');
     }
     // Check for at least one uppercase letter
     if (!RegExp(r'[A-Z]').hasMatch(password)) {
