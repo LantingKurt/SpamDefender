@@ -9,6 +9,9 @@ import 'package:spamdefender/firebase_auth_implementation/firebase_auth_services
 import 'welcome.dart';
 import 'home_page.dart';
 
+// login page
+import 'log_in.dart';
+
 import 'validation_utils.dart';
 
 // SIGN UP //
@@ -327,6 +330,42 @@ class SignupScreenState extends State<SignupScreen> {
                   ),
                 ),
               ),
+              Positioned(
+                top: 610,
+                left: 75.0,
+                child: Row(
+                  children: [
+                    Text(
+                      'Already have an account? ',
+                      style: TextStyle(
+                        color: Color(0xFF050a30),
+                        fontSize: 15,
+                        fontFamily: 'Mosafin',
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        // Handle the login button tap here
+                        // print('Login button pressed!');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => LoginScreen()),
+                        );
+                      },
+                      child: Text(
+                        'Login',
+                        style: TextStyle(
+                          color: Colors.blue, // Make it look like a button
+                          fontSize: 15,
+                          fontFamily: 'Mosafin',
+                          decoration: TextDecoration.underline, // Optional, for emphasis
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               // Error message display
               if (errorMessage.isNotEmpty)
                 Positioned(
