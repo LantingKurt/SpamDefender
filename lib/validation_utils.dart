@@ -18,8 +18,8 @@ class ValidationUtils {
   static List<String> validateUsername(String username) {
     final List<String> failedUsernameSignUpCriteria = [];
 
-    if(username.length > 30){
-      failedUsernameSignUpCriteria.add('Username must be 30 characters or less');
+    if(username.length > 37){
+      failedUsernameSignUpCriteria.add('Username must be 37 characters or less');
     }
 
     return failedUsernameSignUpCriteria;
@@ -37,8 +37,8 @@ class ValidationUtils {
     }
 
     // check password length maximum
-    if (password.length > 100) {
-      failedPasswordSignUpCriteria.add('be 100 characters or less');
+    if (password.length > 37) {
+      failedPasswordSignUpCriteria.add('be 37 characters or less');
     }
     // Check for at least one uppercase letter
     if (!RegExp(r'[A-Z]').hasMatch(password)) {
