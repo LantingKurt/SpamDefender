@@ -93,14 +93,26 @@ class SignupScreenState extends State<SignupScreen> {
     } 
 
     final failedEmailSignUpCriteria = ValidationUtils.validateEmail(enteredEmail);
+    final failedUsernameSignUpCriteria = ValidationUtils.validateUsername(enteredUsername);
     final failedPasswordSignUpCriteria = ValidationUtils.validatePassword(enteredPassword);
-
     if (failedEmailSignUpCriteria.isNotEmpty) {
       setState(() {
         errorMessage = [
           'Sign up failed. Please try again.',
           '',
           ...failedEmailSignUpCriteria,
+        ].join('\n');
+        _isSigning = false; // Stop the spinner
+      });
+      return;
+    }
+
+    if (failedUsernameSignUpCriteria.isNotEmpty) {
+      setState(() {
+        errorMessage = [
+          'Sign up failed. Please try again.',
+          '',
+          ...failedUsernameSignUpCriteria,
         ].join('\n');
         _isSigning = false; // Stop the spinner
       });
