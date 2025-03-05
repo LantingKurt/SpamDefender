@@ -7,6 +7,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:spamdefender/firebase_auth_implementation/firebase_auth_services.dart';
 
 import 'edit_contacts.dart';
+import 'add_contacts.dart';
+
 
 // WHITELIST CONTACTS //
 class WhitelistScreen extends StatefulWidget {
@@ -42,6 +44,12 @@ class WhitelistScreenState extends State<WhitelistScreen> {
   void _updateContact(Map<String, String> updatedContact, int index) {
     setState(() {
       whitelist[index] = updatedContact;
+    });
+  }
+
+  void _addNewContact(Map<String, String> newContact) {
+    setState(() {
+      whitelist.add(newContact);
     });
   }
 
@@ -124,8 +132,16 @@ class WhitelistScreenState extends State<WhitelistScreen> {
             child: IconButton(
               icon: Icon(Icons.add, color: Colors.white, size: 30), // Back arrow icon
               onPressed: () {
-                Navigator.pop(context);
-              },
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddContactScreen(
+                      onAdd: _addNewContact,
+                    ),
+                  ),
+                );
+              }
+
             ),
           ),
           Positioned(

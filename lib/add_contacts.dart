@@ -7,30 +7,26 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:spamdefender/firebase_auth_implementation/firebase_auth_services.dart';
 
 
-class EditContactScreen extends StatefulWidget {
-  final Map<String, String> contact;
-  final int index;
-  final Function(Map<String, String>, int) onUpdate;
+class AddContactScreen extends StatefulWidget {
+  final Function(Map<String, String>) onAdd;
 
-  EditContactScreen({
-    required this.contact,
-    required this.index,
-    required this.onUpdate,
+  AddContactScreen({
+    required this.onAdd,
   });
 
   @override
-  _EditContactScreenState createState() => _EditContactScreenState();
+  _AddContactScreenState createState() => _AddContactScreenState();
 }
 
-class _EditContactScreenState extends State<EditContactScreen> {
+class _AddContactScreenState extends State<AddContactScreen> {
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.contact['name']);
-    _phoneController = TextEditingController(text: widget.contact['phone']);
+    _nameController = TextEditingController();
+    _phoneController = TextEditingController();
   }
 
   @override
@@ -68,9 +64,9 @@ class _EditContactScreenState extends State<EditContactScreen> {
                     Navigator.pop(context);
                   },
                 ),
-                // Edit Contact text
+                // Add Contact text
                 Text(
-                  'Home',
+                  'Add Contact',
                   style: TextStyle(
                     color: Color(0xffffffff),
                     fontSize: 23,
@@ -82,10 +78,9 @@ class _EditContactScreenState extends State<EditContactScreen> {
           ),
           Positioned(
             top: 120.0,
-            left: 75.0,
-            right: 75,
+            left: 120.0,
             child: Text(
-              'Edit Contact Details',
+              'New Contact',
               style: TextStyle(
                 color: Color(0xFF070056),
                 fontSize: 25,
@@ -99,10 +94,9 @@ class _EditContactScreenState extends State<EditContactScreen> {
             left: 15.0,
             right: 15.0,
             child: Icon(
-                  Icons.person,
-                  size: 100.0,
-                ),
-
+              Icons.person,
+              size: 100.0,
+            ),
           ),
           Positioned(
             top: 300.0,
@@ -214,7 +208,7 @@ class _EditContactScreenState extends State<EditContactScreen> {
                 ),
               ),
               child: Text(
-                'Save Changes',
+                'Add Contact',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -222,10 +216,10 @@ class _EditContactScreenState extends State<EditContactScreen> {
                 ),
               ),
               onPressed: () {
-                widget.onUpdate({
+                widget.onAdd({
                   'name': _nameController.text,
                   'phone': _phoneController.text,
-                }, widget.index);
+                });
                 Navigator.pop(context);
               },
             ),
@@ -235,5 +229,3 @@ class _EditContactScreenState extends State<EditContactScreen> {
     );
   }
 }
-
-
