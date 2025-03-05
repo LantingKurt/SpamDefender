@@ -6,6 +6,8 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:spamdefender/firebase_auth_implementation/firebase_auth_services.dart';
 
+import 'edit_contacts.dart';
+
 // WHITELIST CONTACTS //
 class WhitelistScreen extends StatefulWidget {
   const WhitelistScreen({super.key});
@@ -30,6 +32,18 @@ class WhitelistScreenState extends State<WhitelistScreen> {
   {'name': 'Nicholas Lanting', 'phone': '117-567-8901'},
   {'name': 'Ton Chio', 'phone': '118-567-8901'},
   ];
+
+  void _deleteContact(int index) {
+    setState(() {
+      whitelist.removeAt(index);
+    });
+  }
+
+  void _updateContact(Map<String, String> updatedContact, int index) {
+    setState(() {
+      whitelist[index] = updatedContact;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,6 +116,16 @@ class WhitelistScreenState extends State<WhitelistScreen> {
                 fontFamily: 'Mosafin',
                 fontWeight: FontWeight.bold,
               ),
+            ),
+          ),
+          Positioned(
+            top: 75.0,
+            right: 25.0,
+            child: IconButton(
+              icon: Icon(Icons.add, color: Colors.white, size: 30), // Back arrow icon
+              onPressed: () {
+                Navigator.pop(context);
+              },
             ),
           ),
           Positioned(
@@ -227,6 +251,37 @@ class WhitelistScreenState extends State<WhitelistScreen> {
                       trailing: IconButton(
                         icon: Icon(Icons.more_horiz),
                         onPressed: () {
+
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (context) {
+                              return ListView(
+                                children: <Widget>[
+                                  ListTile(
+                                    title: Text('Edit'),
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      Navigator.push(context,
+                                        MaterialPageRoute(
+                                        builder: (context) => EditContactScreen(
+                                          contact: contact,
+                                          index: contactIndex,
+                                          onUpdate: _updateContact,
+                                             ),
+                                            ),
+                                           );
+                                          },
+                                         ),
+                                  ListTile(
+                                    title: Text('Delete'),
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      _deleteContact(contactIndex);                                     },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
                         },
                       ),
                       onTap: () {
