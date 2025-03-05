@@ -11,6 +11,7 @@ import 'package:spamdefender/firebase_auth_implementation/firebase_auth_services
 // UI Screens
 import 'welcome.dart';
 import 'whitelist_contacts.dart';
+import 'blacklist_contacts.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -84,13 +85,13 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             Positioned(
-              bottom: 5,
+              bottom: 8,
               right: 50,
               child: IconButton(
                 icon: const Icon(
                   Icons.bookmark_border,
                   color: Colors.white,
-                  size: 40.0,
+                  size: 35.0,
                 ),
                 onPressed: () {
                   Navigator.push(
@@ -102,16 +103,35 @@ class HomeScreen extends StatelessWidget {
                 },
               ),
             ),
+            Positioned(
+              bottom: 8,
+              right: 120,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.block,
+                  color: Colors.white,
+                  size: 35.0,
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const BlacklistScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
 
             // Sign out button
             Positioned(
-              bottom: 10,
+              bottom: 8,
               left: 50,
               child: IconButton(
                 icon: const Icon(
                   Icons.exit_to_app,
                   color: Colors.white,
-                  size: 40.0,
+                  size: 35.0,
                 ),
                 onPressed: () {
                   FirebaseAuth.instance.signOut(); //Signs out on firebase
