@@ -12,9 +12,8 @@ import 'home_page.dart';
 // login page
 import 'log_in.dart';
 
-import 'validation_utils.dart';
+import 'utils/validation.dart';
 
-// SIGN UP //
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
@@ -24,15 +23,20 @@ class SignupScreen extends StatefulWidget {
 
 class SignupScreenState extends State<SignupScreen> {
   final FirebaseAuthService _auth = FirebaseAuthService();
+  final _formKey = GlobalKey<FormState>();
 
   bool isButtonActive = false;
   bool _isSigning = false;
   String errorMessage = '';
+  String _emailError = '';
+  String _passwordError = '';
 
   TextEditingController _emailController = TextEditingController();
   TextEditingController _usernameController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
   TextEditingController _confirmpasswordController = TextEditingController();
+
+  final PageController _pageController = PageController();
 
   @override
   void dispose() {
@@ -40,6 +44,7 @@ class SignupScreenState extends State<SignupScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmpasswordController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -62,360 +67,74 @@ class SignupScreenState extends State<SignupScreen> {
     setState(() {
       isButtonActive =
           _usernameController.text.isNotEmpty &&
-          _passwordController.text.isNotEmpty &&
-          _confirmpasswordController.text.isNotEmpty &&
+          // _passwordController.text.isNotEmpty &&
+          // _confirmpasswordController.text.isNotEmpty &&
           _emailController.text.isNotEmpty &&
-          _passwordController.text == _confirmpasswordController.text;
-
-      if (_passwordController.text != _confirmpasswordController.text) {
-        errorMessage = 'Passwords do not match';
-      } else {
-        errorMessage = '';
-      }
+          _passwordController.text == _confirmpasswordController.text &&
+          ValidationUtils.validateEmail(_emailController.text).isEmpty &&
+          ValidationUtils.validateUsername(_usernameController.text).isEmpty;
     });
+    print('Entered Email: ${_emailController.text}');
+    print('Entered Username: ${_usernameController.text}');
+    print('Entered Password: ${_passwordController.text}');
+    print('Entered Confirm Password: ${_confirmpasswordController.text}');
+    print('Is Button Active: $isButtonActive');
   }
 
-  void _handleSignUp() {
-        setState(() {
+  void _presignUp() async {
+    setState(() {
       _isSigning = true;
-      errorMessage = ''; // Clear any previous error messages
+      _emailError = '';
     });
 
-    String enteredEmail = _emailController.text;
-    String enteredUsername = _usernameController.text;
-    String enteredPassword = _passwordController.text;
-    String confirmedPassword = _confirmpasswordController.text;
+    String email = _emailController.text;
+    String username = _usernameController.text;
 
-    if (enteredPassword != confirmedPassword) {
+    String firebaseAuthEmail = await _auth.signUpVerifyEmail(email);
+
+    /* This condition is for email duplicates, successful
+    if firebaseAuthEmail did not returned anything since we dont want to register the user yet*/
+    if (firebaseAuthEmail == '') {
+      // Proceed if email is not a duplicate
+      _pageController.nextPage(
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
       setState(() {
-        errorMessage = 'Passwords do not match';
+        _isSigning = false;
       });
-    } 
-
-    final failedEmailSignUpCriteria = ValidationUtils.validateEmail(enteredEmail);
-    final failedUsernameSignUpCriteria = ValidationUtils.validateUsername(enteredUsername);
-    final failedPasswordSignUpCriteria = ValidationUtils.validatePassword(enteredPassword);
-    if (failedEmailSignUpCriteria.isNotEmpty) {
+    } else {
+      // Email is a duplicate
       setState(() {
-        errorMessage = [
-          'Sign up failed. Please try again.',
-          '',
-          ...failedEmailSignUpCriteria,
-        ].join('\n');
-        _isSigning = false; // Stop the spinner
-      });
-      return;
-    }
-
-    if (failedUsernameSignUpCriteria.isNotEmpty) {
-      setState(() {
-        errorMessage = [
-          'Sign up failed. Please try again.',
-          '',
-          ...failedUsernameSignUpCriteria,
-        ].join('\n');
-        _isSigning = false; // Stop the spinner
+        // Store the error message, to be used by validator
+        _emailError = firebaseAuthEmail;
+        _isSigning = false;
       });
       return;
     }
-
-    if (failedPasswordSignUpCriteria.isNotEmpty) {
-      setState(() {
-        errorMessage = [
-          'Sign up failed. Please try again.\n',
-          'The password must',
-          ...failedPasswordSignUpCriteria,
-          '.'
-        ].join(' ');
-        _isSigning = false; // Stop the spinner
-      });
-      return;
-    }
-
-    _signUp();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false, // Prevents default back navigation
-      onPopInvokedWithResult: (bool didPop, Object? result) {
-        if (!didPop) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => WelcomeScreen()),
-          );
-        }
-      },
-      child: Scaffold(
-        resizeToAvoidBottomInset: false, // Prevents content shifting
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          child: Stack(
-            children: [
-              Positioned(
-                top: -330,
-                left: 87,
-                child: Image.asset(
-                  'images/mainlogo.png',
-                  width: MediaQuery.of(context).size.width * 0.6,
-                  height: MediaQuery.of(context).size.height,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              Positioned(
-                top: 220.0 - 50,
-                left: 30.0,
-                child: Text(
-                  'Create your Account',
-                  style: TextStyle(
-                    color: Color(0xFF050a30),
-                    fontSize: 20,
-                    fontFamily: 'Mosafin',
-                  ),
-                ),
-              ),
-              // Email Label
-              Positioned(
-                top: 255 - 50,
-                left: 30.0,
-                child: Text(
-                  'Email',
-                  style: TextStyle(
-                    color: Color(0xFF050a30),
-                    fontSize: 15,
-                    fontFamily: 'Mosafin',
-                  ),
-                ),
-              ),
-              // Email TextField
-              Positioned(
-                top: 280 - 50,
-                left: 30.0,
-                right: 30.0,
-                child: TextField(
-                  key: Key('emailField'),
-                  // Added key here
-                  controller: _emailController,
-                  textInputAction: TextInputAction.next,
-                  onSubmitted: (value) {
-                    if (isButtonActive) _handleSignUp();
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Enter email',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-              // Username Label
-              Positioned(
-                top: 350 - 50,
-                left: 30.0,
-                child: Text(
-                  'Username',
-                  style: TextStyle(
-                    color: Color(0xFF050a30),
-                    fontSize: 15,
-                    fontFamily: 'Mosafin',
-                  ),
-                ),
-              ),
-              // Username TextField
-              Positioned(
-                top: 375 - 50,
-                left: 30.0,
-                right: 30.0,
-                child: TextField(
-                  key: Key('usernameField'),
-                  // Added key here
-                  controller: _usernameController,
-                  textInputAction: TextInputAction.next,
-                  onSubmitted: (value) {
-                    if (isButtonActive) _handleSignUp();
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Enter username',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-              // Password Label
-              Positioned(
-                top: 440.0 - 50,
-                left: 30.0,
-                child: Text(
-                  'Password',
-                  style: TextStyle(
-                    color: Color(0xFF050a30),
-                    fontSize: 15,
-                    fontFamily: 'Mosafin',
-                  ),
-                ),
-              ),
-              // Password TextField
-              Positioned(
-                top: 470.0 - 50,
-                left: 30.0,
-                right: 30.0,
-                child: TextField(
-                  key: Key('passwordField'),
-                  // Added key here
-                  controller: _passwordController,
-                  obscureText: true,
-                  onSubmitted: (value) {
-                    if (isButtonActive) _handleSignUp();
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Enter password',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-              // Confirm Password Label
-              Positioned(
-                top: 540.0 - 50,
-                left: 30.0,
-                child: Text(
-                  'Confirm password',
-                  style: TextStyle(
-                    color: Color(0xFF050a30),
-                    fontSize: 15,
-                    fontFamily: 'Mosafin',
-                  ),
-                ),
-              ),
-              // Confirm Password TextField
-              Positioned(
-                top: 565.0 - 50,
-                left: 30.0,
-                right: 30.0,
-                child: TextField(
-                  key: Key('confirmpasswordField'),
-                  // Added key here
-                  controller: _confirmpasswordController,
-                  obscureText: true,
-                  onSubmitted: (value) {
-                    if (isButtonActive) _handleSignUp();
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Confirm password',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-              // Sign-Up Button
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 30.0,
-                    vertical: 170.0,
-                  ),
-                  child: OutlinedButton(
-                    onPressed:
-                        isButtonActive
-                            ? () {
-                              _handleSignUp();
-                            }
-                            : null,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor:
-                          isButtonActive ? Colors.white : Colors.grey,
-                      backgroundColor:
-                          isButtonActive ? Color(0xFF050a30) : Colors.grey[400],
-                      side: BorderSide(color: Color(0xFF050a30)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      minimumSize: Size(1000, 45),
-                    ),
-                    child:
-                        _isSigning
-                            ? SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                              ),
-                            )
-                            : Text('SIGN UP'),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 610,
-                left: 75.0,
-                child: Row(
-                  children: [
-                    Text(
-                      'Already have an account? ',
-                      style: TextStyle(
-                        color: Color(0xFF050a30),
-                        fontSize: 15,
-                        fontFamily: 'Mosafin',
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        // Handle the login button tap here
-                        // print('Login button pressed!');
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => LoginScreen()),
-                        );
-                      },
-                      child: Text(
-                        'Login',
-                        style: TextStyle(
-                          color: Colors.blue, // Make it look like a button
-                          fontSize: 15,
-                          fontFamily: 'Mosafin',
-                          decoration: TextDecoration.underline, // Optional, for emphasis
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Error message display
-              if (errorMessage.isNotEmpty)
-                Positioned(
-                  bottom: 25.0,
-                  left: 10.0,
-                  right: 10.0,
-                  child: Text(
-                    errorMessage,
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // SIGN UP FIREBASE
   void _signUp() async {
     setState(() {
       _isSigning = true;
-      errorMessage = ''; // Clear any previous error messages
+      _passwordError = '';
     });
 
-    String username = _usernameController.text;
     String email = _emailController.text;
     String password = _passwordController.text;
 
+    String firebaseAuthPassword = await _auth.signUpWithEmailAndPassword(
+      email,
+      password,
+    );
 
-    User? user = await _auth.signUpWithEmailAndPassword(email, password);
-
-    if (user != null) {
+    if (firebaseAuthPassword.isNotEmpty) {
+      setState(() {
+        errorMessage = firebaseAuthPassword;
+        _isSigning = false;
+      });
+      return;
+    } else {
       print("User successfully created");
       if (mounted) {
         Navigator.pushReplacement(
@@ -423,13 +142,357 @@ class SignupScreenState extends State<SignupScreen> {
           MaterialPageRoute(builder: (context) => HomeScreen()),
         );
       }
-    } else {
-      print("User sign up failed");
-      setState(() {
-        errorMessage = 'Sign up failed. Please try again.';
-         _isSigning = false;
-      });
     }
+  } //_signUp
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      resizeToAvoidBottomInset: false, // Prevents content shifting
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Positioned(
+              top: MediaQuery.of(context).size.height * 0.10,
+              left: MediaQuery.of(context).size.width * 0.15,
+              right: MediaQuery.of(context).size.width * 0.15,
+              child: Center(
+                child: Image.asset(
+                  'images/mainlogo.png',
+                  width: MediaQuery.of(context).size.width * 0.7,
+                  height: MediaQuery.of(context).size.height * 0.1,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            PageView(
+              controller: _pageController,
+              physics: NeverScrollableScrollPhysics(),
+              children: [_buildFirstPage(), _buildSecondPage()],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFirstPage() {
+    return Form(
+      key: _formKey, // Add this line
+      child: Stack(
+        children: [
+          Positioned(
+            top: MediaQuery.of(context).size.height * 0.10,
+            left: MediaQuery.of(context).size.width * 0.15,
+            right: MediaQuery.of(context).size.width * 0.15,
+            child: Center(
+              child: Image.asset(
+                'images/mainlogo.png',
+                width: MediaQuery.of(context).size.width * 0.7,
+                height: MediaQuery.of(context).size.height * 0.1,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 230.0,
+            left: 30.0,
+            child: Text(
+              'Create your Email and Username',
+              style: TextStyle(
+                color: Color(0xFF050a30),
+                fontSize: 20,
+                fontFamily: 'Mosafin',
+              ),
+            ),
+          ),
+          Positioned(
+            top: 285.0,
+            left: 30.0,
+            child: Text(
+              'Email',
+              style: TextStyle(
+                color: Color(0xFF050a30),
+                fontSize: 15,
+                fontFamily: 'Mosafin',
+              ),
+            ),
+          ),
+          Positioned(
+            top: 320.0,
+            left: 30.0,
+            right: 30.0,
+            child: TextFormField(
+              key: Key('emailField'),
+              controller: _emailController,
+              textInputAction: TextInputAction.next,
+              decoration: InputDecoration(
+                hintText: 'Enter email',
+                border: OutlineInputBorder(),
+                errorStyle: TextStyle(fontSize: 9.0),
+              ),
+              validator: (value) {
+                // Check for email duplicates
+                if (_emailError.isNotEmpty) {
+                  String error = _emailError; // save error message
+                  _emailError = ''; // clear error message after use
+                  return error;
+                }
+
+                // Handles email format
+                final validationResult = ValidationUtils.validateEmail(
+                  value ?? '',
+                );
+                if (validationResult.isEmpty) {
+                  return null;
+                } else {
+                  return validationResult.join('');
+                }
+              },
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+            ),
+          ),
+          Positioned(
+            top: 460.0,
+            left: 30.0,
+            right: 30.0,
+            child: TextFormField(
+              key: Key('usernameField'),
+              controller: _usernameController,
+              textInputAction: TextInputAction.next,
+              decoration: InputDecoration(
+                hintText: 'Enter username',
+                border: OutlineInputBorder(),
+                errorStyle: TextStyle(fontSize: 9.0),
+              ),
+              validator: (value) {
+                // Handles username format
+                final validationResult = ValidationUtils.validateUsername(
+                  value ?? '',
+                );
+                if (validationResult.isEmpty) {
+                  return null;
+                } else {
+                  return validationResult.join('');
+                }
+              },
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+            ),
+          ),
+          Positioned(
+            top: 430.0,
+            left: 30.0,
+            child: Text(
+              'Username',
+              style: TextStyle(
+                color: Color(0xFF050a30),
+                fontSize: 15,
+                fontFamily: 'Mosafin',
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 30.0,
+                vertical: 170.0,
+              ),
+              child: OutlinedButton(
+                onPressed:
+                    (!_isSigning && isButtonActive)
+                        ? () {
+                          _presignUp();
+                        }
+                        : null,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: isButtonActive ? Colors.white : Colors.grey,
+                  backgroundColor:
+                      isButtonActive ? Color(0xFF050a30) : Colors.grey[400],
+                  side: BorderSide(color: Color(0xFF050a30)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  minimumSize: Size(1000, 45),
+                ),
+                child:
+                    _isSigning
+                        ? SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(color: Colors.white),
+                        )
+                        : Text('NEXT'),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 670,
+            left: 75.0,
+            child: Row(
+              children: [
+                Text(
+                  'Already have an account? ',
+                  style: TextStyle(
+                    color: Color(0xFF050a30),
+                    fontSize: 15,
+                    fontFamily: 'Mosafin',
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    // Handle the login button tap here
+                    // print('Login button pressed!');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginScreen()),
+                    );
+                  },
+                  child: Text(
+                    'Login',
+                    style: TextStyle(
+                      color: Colors.blue, // Make it look like a button
+                      fontSize: 15,
+                      fontFamily: 'Mosafin',
+                      decoration:
+                          TextDecoration.underline, // Optional, for emphasis
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ], //children
+      ),
+    );
+  }
+
+  Widget _buildSecondPage() {
+    return Stack(
+      children: [
+        Positioned(
+          top: 230.0,
+          left: 30.0,
+          child: Text(
+            'Create your Password',
+            style: TextStyle(
+              color: Color(0xFF050a30),
+              fontSize: 20,
+              fontFamily: 'Mosafin',
+            ),
+          ),
+        ),
+        Positioned(
+          top: 265.0,
+          left: 30.0,
+          child: Text(
+            'Password',
+            style: TextStyle(
+              color: Color(0xFF050a30),
+              fontSize: 15,
+              fontFamily: 'Mosafin',
+            ),
+          ),
+        ),
+        Positioned(
+          top: 300.0,
+          left: 30.0,
+          right: 30.0,
+          child: TextFormField(
+            key: Key('passwordField'),
+            controller: _passwordController,
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+              hintText: 'Enter password',
+              border: OutlineInputBorder(),
+              errorStyle: TextStyle(fontSize: 9.0),
+              errorMaxLines: 10,
+            ),
+            validator: (value) {
+              // Check for email duplicates
+              if (_passwordError.isNotEmpty) {
+                String error = _passwordError; // save error message
+                _passwordError = ''; // clear error message after use
+                return error;
+              }
+
+              // Handles email format
+              final validationResult = ValidationUtils.validatePassword(
+                value ?? '',
+              );
+              if (validationResult.isEmpty) {
+                return null;
+              } else {
+                return 'Password must ${validationResult.join('')}';
+              }
+            },
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+          ),
+        ),
+        Positioned(
+          top: 430.0,
+          left: 30.0,
+          child: Text(
+            'Confirm password',
+            style: TextStyle(
+              color: Color(0xFF050a30),
+              fontSize: 15,
+              fontFamily: 'Mosafin',
+            ),
+          ),
+        ),
+        Positioned(
+          top: 465.0,
+          left: 30.0,
+          right: 30.0,
+          child: TextField(
+            key: Key('confirmpasswordField'),
+            controller: _confirmpasswordController,
+            textInputAction: TextInputAction.done,
+            obscureText: true,
+            decoration: InputDecoration(
+              hintText: 'Confirm password',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 30.0,
+              vertical: 170.0,
+            ),
+            child: OutlinedButton(
+              onPressed:
+                  (!_isSigning && isButtonActive)
+                      ? () {
+                        _signUp();
+                      }
+                      : null,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: isButtonActive ? Colors.white : Colors.grey,
+                backgroundColor:
+                    isButtonActive ? Color(0xFF050a30) : Colors.grey[400],
+                side: BorderSide(color: Color(0xFF050a30)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                minimumSize: Size(1000, 45),
+              ),
+              child:
+                  _isSigning
+                      ? SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(color: Colors.white),
+                      )
+                      : Text('SIGN UP'),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

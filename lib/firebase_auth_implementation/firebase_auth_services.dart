@@ -1,15 +1,11 @@
 // Firebase Implementation
 import 'package:firebase_auth/firebase_auth.dart';
 
-import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-
 // Toast Notif
 import 'package:spamdefender/global/common/toast.dart';
 
-import 'package:spamdefender/sign_up.dart';
-
-import 'package:spamdefender/validation_utils.dart';
+// Utils
+import 'package:spamdefender/utils/validation.dart';
 
 class FirebaseAuthService {
   final FirebaseAuth _auth;
@@ -17,7 +13,35 @@ class FirebaseAuthService {
   FirebaseAuthService({FirebaseAuth? firebaseAuth})
     : _auth = firebaseAuth ?? FirebaseAuth.instance;
 
-  Future<User?> signUpWithEmailAndPassword(
+  Future<String> signUpVerifyEmail(String email) async {
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: 'dummypassword',
+      );
+
+    } on FirebaseAuthException catch (e) {
+      final failedEmailSignUpCriteria = ValidationUtils.validateEmail(email);
+      if (e.code == 'email-already-in-use') {
+        var message = 'The email address is already in use.';
+        return message;
+      } else if (e.code == 'invalid-email' ||
+          failedEmailSignUpCriteria.isNotEmpty) {
+        return failedEmailSignUpCriteria[0];
+      } else {
+        var message = e.code;
+        return message;
+      }
+    } finally { /* If account creation succeeds, delete the test user
+      since we want to create the user with the inputted password by the user*/
+      User? user = FirebaseAuth.instance.currentUser;
+      await user?.delete();
+    }
+    return ''; // Email was available
+  }
+
+  // Actual signing up
+  Future<String> signUpWithEmailAndPassword(
     String email,
     String password,
   ) async {
@@ -26,29 +50,25 @@ class FirebaseAuthService {
         email: email,
         password: password,
       );
-      return credential.user;
+      return '';
     } on FirebaseAuthException catch (e) {
-      final failedEmailSignUpCriteria = ValidationUtils.validateEmail(email);
-      final failedPasswordSignUpCriteria = ValidationUtils.validatePassword(password);
-      if (e.code == 'email-already-in-use') {
-        showToast(message: 'The email address is already in use.');
-      } else if (e.code == 'invalid-email' || failedEmailSignUpCriteria.isNotEmpty) {
-        showToast(message: 'The email address is badly formatted.');
-      } else if (e.code == 'weak-password' || failedPasswordSignUpCriteria.isNotEmpty) {
-        showToast(message: 'The password is too weak.');
+      final failedPasswordSignUpCriteria = ValidationUtils.validatePassword(
+        password,
+      );
+      if (e.code == 'weak-password' ||
+          failedPasswordSignUpCriteria.isNotEmpty) {
+        return failedPasswordSignUpCriteria[0];
       } else if (e.code == 'network-request-failed') {
-        showToast(
-          message:
-              'No network connection. Please connect to your internet and try again.',
-          fontSize: 15.0,
-        );
+        var message = 'No internet connection. Please try again later.';
+        return message;
       } else {
-        showToast(message: 'An error occurred: ${e.code}');
+        var message = 'An error occurred: ${e.code}';
+        return message;
       }
     }
-    return null;
   }
 
+  // Login
   Future<User?> signinWithEmailAndPassword(
     String email,
     String password,

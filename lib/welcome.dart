@@ -75,7 +75,6 @@ class WelcomeScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => SignupScreen()),
                 );
               },
-
               style: OutlinedButton.styleFrom(
                 foregroundColor: Color(0xFF050a30),
                 backgroundColor: Colors.white,

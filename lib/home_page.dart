@@ -84,6 +84,8 @@ class HomeScreen extends StatelessWidget {
                 fit: BoxFit.contain,
               ),
             ),
+
+            // Whitelist Contacts button
             Positioned(
               bottom: 8,
               right: 50,
@@ -103,6 +105,8 @@ class HomeScreen extends StatelessWidget {
                 },
               ),
             ),
+
+            // Blacklist Contacts button
             Positioned(
               bottom: 8,
               right: 120,

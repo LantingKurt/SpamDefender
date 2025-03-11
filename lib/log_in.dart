@@ -8,8 +8,6 @@ import 'package:spamdefender/firebase_auth_implementation/firebase_auth_services
 // UI Screens
 import 'home_page.dart';
 import 'welcome.dart';
-
-// sign up page
 import 'sign_up.dart';
 
 // LOG IN
@@ -242,7 +240,7 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               Positioned(
-                top: 610,
+                top: 630,
                 left: 75.0,
                 child: Row(
                   children: [

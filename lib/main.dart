@@ -7,7 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 // Firebase Implementation --------------------------------------------------------------
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:spamdefender/firebase_options.dart';
 
 //import 'package:firebase_auth/firebase_auth.dart';
 //import 'firebase_auth_services.dart';
@@ -27,20 +27,11 @@ import 'splash_screen.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform,);
   await FirebaseAppCheck.instance.activate(
-    // You can also use a `ReCaptchaEnterpriseProvider` provider instance as an
-    // argument for `webProvider`
     webProvider: ReCaptchaV3Provider('recaptcha-v3-site-key'),
-    // Default provider for Android is the Play Integrity provider. You can use the "AndroidProvider" enum to choose
-    // your preferred provider. Choose from:
-    // 1. Debug provider
-    // 2. Safety Net provider
-    // 3. Play Integrity provider
     androidProvider: AndroidProvider.debug,
   );
-
   runApp(MyApp());
 }
 

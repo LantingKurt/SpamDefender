@@ -6,13 +6,10 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:spamdefender/firebase_auth_implementation/firebase_auth_services.dart';
 
-
 class AddContactScreen extends StatefulWidget {
   final Function(Map<String, String>) onAdd;
 
-  AddContactScreen({
-    required this.onAdd,
-  });
+  AddContactScreen({required this.onAdd});
 
   @override
   _AddContactScreenState createState() => _AddContactScreenState();
@@ -93,10 +90,7 @@ class _AddContactScreenState extends State<AddContactScreen> {
             top: 180.0,
             left: 15.0,
             right: 15.0,
-            child: Icon(
-              Icons.person,
-              size: 100.0,
-            ),
+            child: Icon(Icons.person, size: 100.0),
           ),
           Positioned(
             top: 300.0,
@@ -120,27 +114,21 @@ class _AddContactScreenState extends State<AddContactScreen> {
                   decoration: InputDecoration(
                     hintText: 'Enter Name',
                     border: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.grey,
-                        width: 1,
-                      ),
+                      borderSide: BorderSide(color: Colors.grey, width: 1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.grey,
-                        width: 1,
-                      ),
+                      borderSide: BorderSide(color: Colors.grey, width: 1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.blue,
-                        width: 1,
-                      ),
+                      borderSide: BorderSide(color: Colors.blue, width: 1),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 10.0,
+                      horizontal: 15.0,
+                    ),
                     filled: true,
                     fillColor: Colors.white,
                     isDense: true,
@@ -164,27 +152,21 @@ class _AddContactScreenState extends State<AddContactScreen> {
                   decoration: InputDecoration(
                     hintText: 'Enter Phone Number',
                     border: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.grey,
-                        width: 1,
-                      ),
+                      borderSide: BorderSide(color: Colors.grey, width: 1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.grey,
-                        width: 1,
-                      ),
+                      borderSide: BorderSide(color: Colors.grey, width: 1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.blue,
-                        width: 1,
-                      ),
+                      borderSide: BorderSide(color: Colors.blue, width: 1),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 10.0,
+                      horizontal: 15.0,
+                    ),
                     filled: true,
                     fillColor: Colors.white,
                     isDense: true,

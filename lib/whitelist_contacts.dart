@@ -9,7 +9,6 @@ import 'package:spamdefender/firebase_auth_implementation/firebase_auth_services
 import 'edit_contacts.dart';
 import 'add_contacts.dart';
 
-
 // WHITELIST CONTACTS //
 class WhitelistScreen extends StatefulWidget {
   const WhitelistScreen({super.key});
@@ -20,19 +19,19 @@ class WhitelistScreen extends StatefulWidget {
 
 class WhitelistScreenState extends State<WhitelistScreen> {
   final List<Map<String, String>> whitelist = [
-  {'name': 'Elle', 'phone': '123-456-7890'},
-  {'name': 'Kurt', 'phone': '987-654-3210'},
-  {'name': 'Wana', 'phone': '555-123-4567'},
-  {'name': 'Anton', 'phone': '444-234-5678'},
-  {'name': 'Rei Germar', 'phone': '333-345-6789'},
-  {'name': 'Ella Gatchalian', 'phone': '222-456-7891'},
-  {'name': 'Lily Cruz', 'phone': '112-567-8901'},
-  {'name': 'Mica Millano', 'phone': '113-567-8901'},
-  {'name': 'Andrea Brillantes', 'phone': '114-567-8901'},
-  {'name': 'Janelle Mendoza', 'phone': '115-567-8901'},
-  {'name': 'Joana Murillo', 'phone': '116-567-8901'},
-  {'name': 'Nicholas Lanting', 'phone': '117-567-8901'},
-  {'name': 'Ton Chio', 'phone': '118-567-8901'},
+    {'name': 'Elle', 'phone': '123-456-7890'},
+    {'name': 'Kurt', 'phone': '987-654-3210'},
+    {'name': 'Wana', 'phone': '555-123-4567'},
+    {'name': 'Anton', 'phone': '444-234-5678'},
+    {'name': 'Rei Germar', 'phone': '333-345-6789'},
+    {'name': 'Ella Gatchalian', 'phone': '222-456-7891'},
+    {'name': 'Lily Cruz', 'phone': '112-567-8901'},
+    {'name': 'Mica Millano', 'phone': '113-567-8901'},
+    {'name': 'Andrea Brillantes', 'phone': '114-567-8901'},
+    {'name': 'Janelle Mendoza', 'phone': '115-567-8901'},
+    {'name': 'Joana Murillo', 'phone': '116-567-8901'},
+    {'name': 'Nicholas Lanting', 'phone': '117-567-8901'},
+    {'name': 'Ton Chio', 'phone': '118-567-8901'},
   ];
 
   void _deleteContact(int index) {
@@ -71,7 +70,7 @@ class WhitelistScreenState extends State<WhitelistScreen> {
 
     int itemCount = sectionHeaders.fold<int>(
       0,
-          (sum, letter) => sum + 1 + groupedContacts[letter]!.length,
+      (sum, letter) => sum + 1 + groupedContacts[letter]!.length,
     );
 
     return Scaffold(
@@ -96,7 +95,8 @@ class WhitelistScreenState extends State<WhitelistScreen> {
               children: [
                 // Back arrow icon button
                 IconButton(
-                  icon: Icon(Icons.arrow_back_ios, color: Color(0xddffad49)), // Back arrow icon
+                  icon: Icon(Icons.arrow_back_ios, color: Color(0xddffad49)),
+                  // Back arrow icon
                   onPressed: () {
                     Navigator.pop(context);
                   },
@@ -130,18 +130,17 @@ class WhitelistScreenState extends State<WhitelistScreen> {
             top: 75.0,
             right: 25.0,
             child: IconButton(
-              icon: Icon(Icons.add, color: Colors.white, size: 30), // Back arrow icon
+              icon: Icon(Icons.add, color: Colors.white, size: 30),
+              // Back arrow icon
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => AddContactScreen(
-                      onAdd: _addNewContact,
-                    ),
+                    builder:
+                        (context) => AddContactScreen(onAdd: _addNewContact),
                   ),
                 );
-              }
-
+              },
             ),
           ),
           Positioned(
@@ -153,31 +152,22 @@ class WhitelistScreenState extends State<WhitelistScreen> {
               decoration: InputDecoration(
                 hintText: 'Search by name or number',
                 border: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.grey,
-                    width: 1.5,
-                  ),
+                  borderSide: BorderSide(color: Colors.grey, width: 1.5),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.grey,
-                    width: 1.5,
-                  ),
+                  borderSide: BorderSide(color: Colors.grey, width: 1.5),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.blue,
-                    width: 1.5,
-                  ),
+                  borderSide: BorderSide(color: Colors.blue, width: 1.5),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: Color(0xFF050a30),
+                prefixIcon: Icon(Icons.search, color: Color(0xFF050a30)),
+                contentPadding: EdgeInsets.symmetric(
+                  vertical: 10.0,
+                  horizontal: 15.0,
                 ),
-                contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
                 filled: true,
                 fillColor: Colors.white,
                 isDense: true,
@@ -193,10 +183,7 @@ class WhitelistScreenState extends State<WhitelistScreen> {
             child: Card(
               elevation: 0,
               child: ListTile(
-                leading: Icon(
-                  Icons.person,
-                  size: 60.0,
-                ),
+                leading: Icon(Icons.person, size: 60.0),
                 title: Text(
                   'My Name',
                   style: TextStyle(
@@ -206,12 +193,14 @@ class WhitelistScreenState extends State<WhitelistScreen> {
                     color: Colors.black,
                   ),
                 ),
-                subtitle: Text('000-000-0000', style: TextStyle(
-                  fontFamily: 'Mosafin',
-                  fontSize: 15.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+                subtitle: Text(
+                  '000-000-0000',
+                  style: TextStyle(
+                    fontFamily: 'Mosafin',
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
               ),
             ),
@@ -228,7 +217,10 @@ class WhitelistScreenState extends State<WhitelistScreen> {
                   List<Map<String, String>> contacts = [];
 
                   for (var section in sectionHeaders) {
-                    int currentSectionItemCount = 1 + groupedContacts[section]!.length; // 1 for the header + contacts
+                    int currentSectionItemCount =
+                        1 +
+                        groupedContacts[section]!
+                            .length; // 1 for the header + contacts
 
                     if (index < sectionIndex + currentSectionItemCount) {
                       letter = section;
@@ -241,13 +233,19 @@ class WhitelistScreenState extends State<WhitelistScreen> {
 
                   if (index == sectionIndex) {
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10.0,
+                        horizontal: 15.0,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             letter,
-                            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           Container(
                             height: 2,
@@ -267,7 +265,6 @@ class WhitelistScreenState extends State<WhitelistScreen> {
                       trailing: IconButton(
                         icon: Icon(Icons.more_horiz),
                         onPressed: () {
-
                           showModalBottomSheet(
                             context: context,
                             builder: (context) {
@@ -277,22 +274,25 @@ class WhitelistScreenState extends State<WhitelistScreen> {
                                     title: Text('Edit'),
                                     onTap: () {
                                       Navigator.pop(context);
-                                      Navigator.push(context,
+                                      Navigator.push(
+                                        context,
                                         MaterialPageRoute(
-                                        builder: (context) => EditContactScreen(
-                                          contact: contact,
-                                          index: contactIndex,
-                                          onUpdate: _updateContact,
-                                             ),
-                                            ),
-                                           );
-                                          },
-                                         ),
+                                          builder:
+                                              (context) => EditContactScreen(
+                                                contact: contact,
+                                                index: contactIndex,
+                                                onUpdate: _updateContact,
+                                              ),
+                                        ),
+                                      );
+                                    },
+                                  ),
                                   ListTile(
                                     title: Text('Delete'),
                                     onTap: () {
                                       Navigator.pop(context);
-                                      _deleteContact(contactIndex);                                     },
+                                      _deleteContact(contactIndex);
+                                    },
                                   ),
                                 ],
                               );
@@ -300,8 +300,7 @@ class WhitelistScreenState extends State<WhitelistScreen> {
                           );
                         },
                       ),
-                      onTap: () {
-                      },
+                      onTap: () {},
                     );
                   }
 

@@ -25,6 +25,7 @@ void main() {
   });
 
   group('FirebaseAuthService', () {
+    // UC1.1-S1: Successful First Sign-Up
     test('Sign up successfully returns a user', () async {
       // Act: Attempt to sign up with email and password
       final result = await authService.signUpWithEmailAndPassword(
