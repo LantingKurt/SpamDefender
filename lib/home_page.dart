@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'welcome.dart';
 import 'whitelist_contacts.dart';
 import 'blacklist_contacts.dart';
+import 'notification.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -117,6 +118,27 @@ class HomeScreen extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const BlacklistScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            // Notifications Button
+            Positioned(
+              bottom: 8,
+              right: 190,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.settings,
+                  color: Colors.white,
+                  size: 35.0,
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationScreen(),
                     ),
                   );
                 },

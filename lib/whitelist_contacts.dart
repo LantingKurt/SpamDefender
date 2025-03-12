@@ -288,7 +288,7 @@ class WhitelistScreenState extends State<WhitelistScreen> {
                                     title: Text('Delete'),
                                     onTap: () {
                                       Navigator.pop(context);
-                                      _deleteContact(contact);  // Pass the contact instead of index
+                                      _deleteContact(contact);
                                     },
                                   ),
                                 ],
@@ -311,3 +311,4 @@ class WhitelistScreenState extends State<WhitelistScreen> {
     );
   }
 }
+

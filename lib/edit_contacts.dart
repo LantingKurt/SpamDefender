@@ -11,7 +11,7 @@ class EditContactScreen extends StatefulWidget {
   final int index;
   final Function(Map<String, String>, int) onUpdate;
 
-  const EditContactScreen({super.key, 
+  const EditContactScreen({super.key,
     required this.contact,
     required this.index,
     required this.onUpdate,
@@ -218,3 +218,5 @@ class _EditContactScreenState extends State<EditContactScreen> {
     );
   }
 }
+
+
