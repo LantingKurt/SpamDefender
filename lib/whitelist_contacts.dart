@@ -13,6 +13,7 @@ class WhitelistScreen extends StatefulWidget {
   WhitelistScreenState createState() => WhitelistScreenState();
 }
 
+
 class WhitelistScreenState extends State<WhitelistScreen> {
   final List<Map<String, String>> whitelist = [
     {'name': 'Elle', 'phone': '123-456-7890'},
@@ -30,9 +31,10 @@ class WhitelistScreenState extends State<WhitelistScreen> {
     {'name': 'Ton Chio', 'phone': '118-567-8901'},
   ];
 
-  void _deleteContact(int index) {
+  // Modify _deleteContact to remove by contact rather than index
+  void _deleteContact(Map<String, String> contact) {
     setState(() {
-      whitelist.removeAt(index);
+      whitelist.remove(contact);
     });
   }
 
@@ -66,7 +68,7 @@ class WhitelistScreenState extends State<WhitelistScreen> {
 
     int itemCount = sectionHeaders.fold<int>(
       0,
-      (sum, letter) => sum + 1 + groupedContacts[letter]!.length,
+          (sum, letter) => sum + 1 + groupedContacts[letter]!.length,
     );
 
     return Scaffold(
@@ -201,7 +203,6 @@ class WhitelistScreenState extends State<WhitelistScreen> {
               ),
             ),
           ),
-
           SafeArea(
             child: Padding(
               padding: EdgeInsets.only(top: 260),
@@ -215,8 +216,8 @@ class WhitelistScreenState extends State<WhitelistScreen> {
                   for (var section in sectionHeaders) {
                     int currentSectionItemCount =
                         1 +
-                        groupedContacts[section]!
-                            .length; // 1 for the header + contacts
+                            groupedContacts[section]!
+                                .length; // 1 for the header + contacts
 
                     if (index < sectionIndex + currentSectionItemCount) {
                       letter = section;
@@ -275,10 +276,10 @@ class WhitelistScreenState extends State<WhitelistScreen> {
                                         MaterialPageRoute(
                                           builder:
                                               (context) => EditContactScreen(
-                                                contact: contact,
-                                                index: contactIndex,
-                                                onUpdate: _updateContact,
-                                              ),
+                                            contact: contact,
+                                            index: contactIndex,
+                                            onUpdate: _updateContact,
+                                          ),
                                         ),
                                       );
                                     },
@@ -287,7 +288,7 @@ class WhitelistScreenState extends State<WhitelistScreen> {
                                     title: Text('Delete'),
                                     onTap: () {
                                       Navigator.pop(context);
-                                      _deleteContact(contactIndex);
+                                      _deleteContact(contact);  // Pass the contact instead of index
                                     },
                                   ),
                                 ],
