@@ -9,7 +9,7 @@ import 'package:spamdefender/firebase_auth_implementation/firebase_auth_services
 class AddContactScreen extends StatefulWidget {
   final Function(Map<String, String>) onAdd;
 
-  AddContactScreen({required this.onAdd});
+  const AddContactScreen({super.key, required this.onAdd});
 
   @override
   _AddContactScreenState createState() => _AddContactScreenState();

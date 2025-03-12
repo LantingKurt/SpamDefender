@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 
 // Firebase Implementation
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:spamdefender/firebase_auth_implementation/firebase_auth_services.dart';
 
 import 'edit_contacts.dart';
 import 'add_contacts.dart';

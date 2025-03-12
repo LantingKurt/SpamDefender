@@ -13,7 +13,6 @@ import 'package:spamdefender/firebase_options.dart';
 //import 'firebase_auth_services.dart';
 //----------------------------------------------------------------------------------------
 
-import 'package:spamdefender/global/common/toast.dart';
 // UI Screens -------------------------------
 import 'splash_screen.dart';
 

@@ -42,7 +42,7 @@ void main() {
     expect(find.text('Jane Doe'), findsOneWidget);
   });
 
-  // UC-3.0-S3: Add Whitelist Contacts
+// UC-3.0-S3: Add Whitelist Contacts
 testWidgets('UC-3.0-S3: Add Whitelist Contacts', (WidgetTester tester) async {
   // Build the AddContactScreen widget
   await tester.pumpWidget(MaterialApp(
@@ -56,13 +56,13 @@ testWidgets('UC-3.0-S3: Add Whitelist Contacts', (WidgetTester tester) async {
   await tester.enterText(find.byType(TextField).at(1), '1234567890');
   await tester.pump();
 
-  // Use a specific key to tap the "Add Contact" button
-  final addContactButton = find.byKey(Key('add_contact_button'));
-  await tester.tap(addContactButton); // Tap the button with the key
+  // Find the "Add Contact" button using its text and tap it
+  final addContactButton = find.text('Add Contact').last; // Use 'last' in case there are multiple buttons with the same text
+  await tester.tap(addContactButton); // Tap the button with the label "Add Contact"
   await tester.pump();
 
   // Ensure the contact was added (this is an example of what should happen)
-  expect(find.text('John Doe'), findsOneWidget);
+  expect(find.text('John Doe'), findsOneWidget);  // Verify that the contact name is added
 });
 
 // UC-3.0-S4: Delete Whitelist Contacts
