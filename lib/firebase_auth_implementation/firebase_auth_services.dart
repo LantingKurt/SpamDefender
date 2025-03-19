@@ -69,7 +69,7 @@ class FirebaseAuthService {
   }
 
   // Login
-  Future<User?> signinWithEmailAndPassword(
+  Future<dynamic> signinWithEmailAndPassword(
     String email,
     String password,
   ) async {
@@ -84,12 +84,8 @@ class FirebaseAuthService {
       if (e.code == 'invalid-credential') {
         // Invalid email or password
         showToast(message: 'Invalid email or password. Please try again.');
-      } else if (e.code == 'invalid-email') {
-        showToast(
-          message: 'Wrong email format. Please try again.',
-          fontSize: 15,
-        );
-      } else if (e.code == 'user-disabled') {
+        return e.code;
+      }  else if (e.code == 'user-disabled') {
         // if user disabled on Firebase console
         showToast(
           message:
@@ -99,6 +95,13 @@ class FirebaseAuthService {
         showToast(
           message:
               'No network connection. Please connect to your internet and try again.',
+          fontSize: 15,
+        );
+      }
+      else if (e.code == 'too-many-requests') {
+        showToast(
+          message:
+          'Too many requests. Please try again later.',
           fontSize: 15,
         );
       } else {

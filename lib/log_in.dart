@@ -10,6 +10,9 @@ import 'home_page.dart';
 import 'welcome.dart';
 import 'sign_up.dart';
 
+// Utils
+import 'utils/validation.dart';
+
 // LOG IN
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,10 +23,13 @@ class LoginScreen extends StatefulWidget {
 
 class LoginScreenState extends State<LoginScreen> {
   final FirebaseAuthService _auth = FirebaseAuthService();
+
   bool isButtonActive = false;
   bool _isLoggingin = false;
   bool _isPasswordVisible = false;
   String errorMessage = '';
+  String _emailError = '';
+  String _passwordError = '';
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -43,7 +49,10 @@ class LoginScreenState extends State<LoginScreen> {
 
   void _checkButtonState() {
     setState(() {
-      isButtonActive = _passwordController.text.isNotEmpty;
+      isButtonActive =
+          _emailController.text.isNotEmpty &&
+          _passwordController.text.isNotEmpty &&
+          ValidationUtils.validateEmail(_emailController.text).isEmpty;
     });
   }
 
@@ -52,6 +61,46 @@ class LoginScreenState extends State<LoginScreen> {
       errorMessage = '';
     });
     _login();
+  }
+
+  // LOG IN FIREBASE
+  void _login() async {
+    setState(() {
+      _isLoggingin = true;
+      _emailError = '';
+      _passwordError = '';
+    });
+
+    String email = _emailController.text;
+    String password = _passwordController.text;
+
+    // Will either return string or user
+    dynamic result = await _auth.signinWithEmailAndPassword(email, password);
+
+    setState(() {
+      _isLoggingin = false;
+    });
+
+    if (result is User) {
+      print(result);
+      print("User successfully logged in");
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen()),
+        );
+      }
+    } else if (result is String) {
+      if (result == 'invalid-credential') {
+        _emailError = ' ';
+        _passwordError = ' ';
+      }
+    } else {
+      setState(() {
+        _emailError = '';
+      });
+      print("User log in failed");
+    }
   }
 
   @override
@@ -95,32 +144,37 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               Positioned(
-                top: 290,
-                left: 30.0,
-                child: Text(
-                  'Email',
-                  style: TextStyle(
-                    color: Color(0xFF050a30),
-                    fontSize: 15,
-                    fontFamily: 'Mosafin',
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 320,
+                top: 290.0,
                 left: 30.0,
                 right: 30.0,
-                child: TextField(
-                  key: Key('usernameField'),
+                child: TextFormField(
+                  key: Key('emailField'),
                   controller: _emailController,
                   textInputAction: TextInputAction.next,
-                  onSubmitted: (value) {
-                    if (isButtonActive) _handleLogin();
-                  },
                   decoration: InputDecoration(
                     hintText: 'Enter email',
                     border: OutlineInputBorder(),
+                    errorStyle: TextStyle(fontSize: 9.0),
                   ),
+                  validator: (value) {
+                    // Check for email duplicates
+                    if (_emailError.isNotEmpty) {
+                      String error = _emailError; // save error message
+                      _emailError = ''; // clear error message after use
+                      return error;
+                    }
+
+                    // Handles email format
+                    final validationResult = ValidationUtils.validateEmail(
+                      value ?? '',
+                    );
+                    if (validationResult.isEmpty) {
+                      return null;
+                    } else {
+                      return validationResult.join('');
+                    }
+                  },
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
               ),
               Positioned(
@@ -140,16 +194,16 @@ class LoginScreenState extends State<LoginScreen> {
                 top: 430.0,
                 left: 30.0,
                 right: 30.0,
-                child: TextField(
+                child: TextFormField(
                   key: Key('passwordField'),
                   controller: _passwordController,
                   obscureText: !_isPasswordVisible,
-                  onSubmitted: (value) {
-                    if (isButtonActive) _handleLogin();
-                  },
+                  textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
                     hintText: 'Enter password',
                     border: OutlineInputBorder(),
+                    errorStyle: TextStyle(fontSize: 9.0),
+                    errorMaxLines: 10,
                     suffixIcon: IconButton(
                       icon: Icon(
                         _isPasswordVisible
@@ -163,46 +217,32 @@ class LoginScreenState extends State<LoginScreen> {
                       },
                     ),
                   ),
+                  validator: (value) {
+                    if (_passwordError.isNotEmpty) {
+                      String error = _passwordError;
+                      _passwordError = '';
+                      return error;
+                    }
+
+                    return null;
+                  },
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
               ),
               Align(
-                alignment: Alignment.topLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 485.0, left: 20.0),
-                  child: Row(
-                    children: [
-                      Checkbox(
-                        value: _isPasswordVisible,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            _isPasswordVisible = value ?? false;
-                          });
-                        },
-                      ),
-                      Text('Show Password',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontFamily: 'Mosafin',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-                Align(
                 alignment: Alignment.centerRight,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 205.0, right: 30.0),
                   child: Text(
-                  'Forget password?',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontFamily: 'Mosafin',
-                  ),
+                    'Forget password?',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontFamily: 'Mosafin',
+                    ),
                   ),
                 ),
-                ),
+              ),
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
@@ -258,7 +298,9 @@ class LoginScreenState extends State<LoginScreen> {
                         // print('Login button pressed!');
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => SignupScreen()),
+                          MaterialPageRoute(
+                            builder: (context) => SignupScreen(),
+                          ),
                         );
                       },
                       child: Text(
@@ -267,7 +309,9 @@ class LoginScreenState extends State<LoginScreen> {
                           color: Colors.blue, // Make it look like a button
                           fontSize: 15,
                           fontFamily: 'Mosafin',
-                          decoration: TextDecoration.underline, // Optional, for emphasis
+                          decoration:
+                              TextDecoration
+                                  .underline, // Optional, for emphasis
                         ),
                       ),
                     ),
@@ -295,36 +339,5 @@ class LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
-  }
-
-  // LOG IN FIREBASE
-  void _login() async {
-    setState(() {
-      _isLoggingin = true;
-    });
-
-    String email = _emailController.text;
-    String password = _passwordController.text;
-
-    User? user = await _auth.signinWithEmailAndPassword(email, password);
-
-    setState(() {
-      _isLoggingin = false;
-    });
-
-    if (user != null) {
-      print("User successfully logged in");
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
-        );
-      }
-    } else {
-      print("User log in failed");
-      setState(() {
-        errorMessage = 'Login failed. Please try again.';
-      });
-    }
   }
 }

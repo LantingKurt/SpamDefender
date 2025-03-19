@@ -6,10 +6,12 @@ import 'package:spamdefender/firebase_auth_implementation/firebase_auth_services
 
 // UI Screens
 import 'home_page.dart';
-
-// login page
 import 'log_in.dart';
 
+// Toast Notif
+import 'package:spamdefender/global/common/toast.dart';
+
+// Utils
 import 'utils/validation.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -21,7 +23,6 @@ class SignupScreen extends StatefulWidget {
 
 class SignupScreenState extends State<SignupScreen> {
   final FirebaseAuthService _auth = FirebaseAuthService();
-  final _formKey = GlobalKey<FormState>();
 
   bool isButtonActive = false;
   bool _isSigning = false;
@@ -101,6 +102,17 @@ class SignupScreenState extends State<SignupScreen> {
       setState(() {
         _isSigning = false;
       });
+    } else if (firebaseAuthEmail == 'network-request-failed') {
+      showToast(
+        message: 'No internet connection. Please try again later.',
+        fontSize: 15,
+      );
+      setState(() {
+        // Store the error message, to be used by validator
+        _emailError = 'Network error';
+        _isSigning = false;
+      });
+      return;
     } else {
       // Email is a duplicate
       setState(() {
@@ -176,23 +188,18 @@ class SignupScreenState extends State<SignupScreen> {
   }
 
   Widget _buildFirstPage() {
-    return Form(
-      key: _formKey, // Add this line
+    return PopScope(
+      onPopInvokedWithResult: (bool didPop, Object? result) {
+        if (!didPop) {
+          // Navigate back to the first page
+          _pageController.previousPage(
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      },
       child: Stack(
         children: [
-          Positioned(
-            top: MediaQuery.of(context).size.height * 0.10,
-            left: MediaQuery.of(context).size.width * 0.15,
-            right: MediaQuery.of(context).size.width * 0.15,
-            child: Center(
-              child: Image.asset(
-                'images/mainlogo.png',
-                width: MediaQuery.of(context).size.width * 0.7,
-                height: MediaQuery.of(context).size.height * 0.1,
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
           Positioned(
             top: 230.0,
             left: 30.0,
@@ -367,130 +374,144 @@ class SignupScreenState extends State<SignupScreen> {
   }
 
   Widget _buildSecondPage() {
-    return Stack(
-      children: [
-        Positioned(
-          top: 230.0,
-          left: 30.0,
-          child: Text(
-            'Create your Password',
-            style: TextStyle(
-              color: Color(0xFF050a30),
-              fontSize: 20,
-              fontFamily: 'Mosafin',
-            ),
-          ),
-        ),
-        Positioned(
-          top: 265.0,
-          left: 30.0,
-          child: Text(
-            'Password',
-            style: TextStyle(
-              color: Color(0xFF050a30),
-              fontSize: 15,
-              fontFamily: 'Mosafin',
-            ),
-          ),
-        ),
-        Positioned(
-          top: 300.0,
-          left: 30.0,
-          right: 30.0,
-          child: TextFormField(
-            key: Key('passwordField'),
-            controller: _passwordController,
-            textInputAction: TextInputAction.next,
-            decoration: InputDecoration(
-              hintText: 'Enter password',
-              border: OutlineInputBorder(),
-              errorStyle: TextStyle(fontSize: 9.0),
-              errorMaxLines: 10,
-            ),
-            validator: (value) {
-              // Check for email duplicates
-              if (_passwordError.isNotEmpty) {
-                String error = _passwordError; // save error message
-                _passwordError = ''; // clear error message after use
-                return error;
-              }
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, Object? result) {
+        if (!didPop) {
+          // Clear passwords
+          _passwordController.clear();
+          _confirmpasswordController.clear();
 
-              // Handles email format
-              final validationResult = ValidationUtils.validatePassword(
-                value ?? '',
-              );
-              if (validationResult.isEmpty) {
-                return null;
-              } else {
-                return 'Password must ${validationResult.join('')}';
-              }
-            },
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-          ),
-        ),
-        Positioned(
-          top: 430.0,
-          left: 30.0,
-          child: Text(
-            'Confirm password',
-            style: TextStyle(
-              color: Color(0xFF050a30),
-              fontSize: 15,
-              fontFamily: 'Mosafin',
-            ),
-          ),
-        ),
-        Positioned(
-          top: 465.0,
-          left: 30.0,
-          right: 30.0,
-          child: TextField(
-            key: Key('confirmpasswordField'),
-            controller: _confirmpasswordController,
-            textInputAction: TextInputAction.done,
-            obscureText: true,
-            decoration: InputDecoration(
-              hintText: 'Confirm password',
-              border: OutlineInputBorder(),
-            ),
-          ),
-        ),
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 30.0,
-              vertical: 170.0,
-            ),
-            child: OutlinedButton(
-              onPressed:
-                  (!_isSigning && isButtonActive)
-                      ? () {
-                        _signUp();
-                      }
-                      : null,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: isButtonActive ? Colors.white : Colors.grey,
-                backgroundColor:
-                    isButtonActive ? Color(0xFF050a30) : Colors.grey[400],
-                side: BorderSide(color: Color(0xFF050a30)),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                minimumSize: Size(1000, 45),
+          // Navigate back to the first page
+          _pageController.previousPage(
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      },
+      child: Stack(
+        children: [
+          Positioned(
+            top: 230.0,
+            left: 30.0,
+            child: Text(
+              'Create your Password',
+              style: TextStyle(
+                color: Color(0xFF050a30),
+                fontSize: 20,
+                fontFamily: 'Mosafin',
               ),
-              child:
-                  _isSigning
-                      ? SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(color: Colors.white),
-                      )
-                      : Text('SIGN UP'),
             ),
           ),
-        ),
-      ],
+          Positioned(
+            top: 265.0,
+            left: 30.0,
+            child: Text(
+              'Password',
+              style: TextStyle(
+                color: Color(0xFF050a30),
+                fontSize: 15,
+                fontFamily: 'Mosafin',
+              ),
+            ),
+          ),
+          Positioned(
+            top: 300.0,
+            left: 30.0,
+            right: 30.0,
+            child: TextFormField(
+              key: Key('passwordField'),
+              controller: _passwordController,
+              textInputAction: TextInputAction.next,
+              decoration: InputDecoration(
+                hintText: 'Enter password',
+                border: OutlineInputBorder(),
+                errorStyle: TextStyle(fontSize: 9.0),
+                errorMaxLines: 10,
+              ),
+              validator: (value) {
+                if (_passwordError.isNotEmpty) {
+                  String error = _passwordError;
+                  _passwordError = '';
+                  return error;
+                }
+
+                final validationResult = ValidationUtils.validatePassword(
+                  value ?? '',
+                );
+                if (validationResult.isEmpty) {
+                  return null;
+                } else {
+                  return 'Password must ${validationResult.join('')}';
+                }
+              },
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+            ),
+          ),
+          Positioned(
+            top: 430.0,
+            left: 30.0,
+            child: Text(
+              'Confirm password',
+              style: TextStyle(
+                color: Color(0xFF050a30),
+                fontSize: 15,
+                fontFamily: 'Mosafin',
+              ),
+            ),
+          ),
+          Positioned(
+            top: 465.0,
+            left: 30.0,
+            right: 30.0,
+            child: TextField(
+              key: Key('confirmpasswordField'),
+              controller: _confirmpasswordController,
+              textInputAction: TextInputAction.done,
+              obscureText: true,
+              decoration: InputDecoration(
+                hintText: 'Confirm password',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 30.0,
+                vertical: 170.0,
+              ),
+              child: OutlinedButton(
+                onPressed:
+                    (!_isSigning && isButtonActive)
+                        ? () {
+                          _signUp();
+                        }
+                        : null,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: isButtonActive ? Colors.white : Colors.grey,
+                  backgroundColor:
+                      isButtonActive ? Color(0xFF050a30) : Colors.grey[400],
+                  side: BorderSide(color: Color(0xFF050a30)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  minimumSize: Size(1000, 45),
+                ),
+                child:
+                    _isSigning
+                        ? SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(color: Colors.white),
+                        )
+                        : Text('SIGN UP'),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
