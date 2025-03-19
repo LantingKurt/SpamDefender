@@ -23,7 +23,6 @@ class SignupScreen extends StatefulWidget {
 
 class SignupScreenState extends State<SignupScreen> {
   final FirebaseAuthService _auth = FirebaseAuthService();
-  final _formKey = GlobalKey<FormState>();
 
   bool isButtonActive = false;
   bool _isSigning = false;
@@ -376,6 +375,7 @@ class SignupScreenState extends State<SignupScreen> {
 
   Widget _buildSecondPage() {
     return PopScope(
+      canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? result) {
         if (!didPop) {
           // Clear passwords
