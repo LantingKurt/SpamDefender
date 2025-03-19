@@ -6,10 +6,12 @@ import 'package:spamdefender/firebase_auth_implementation/firebase_auth_services
 
 // UI Screens
 import 'home_page.dart';
-
-// login page
 import 'log_in.dart';
 
+// Toast Notif
+import 'package:spamdefender/global/common/toast.dart';
+
+// Utils
 import 'utils/validation.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -101,6 +103,17 @@ class SignupScreenState extends State<SignupScreen> {
       setState(() {
         _isSigning = false;
       });
+    } else if (firebaseAuthEmail == 'network-request-failed') {
+      showToast(
+        message: 'No internet connection. Please try again later.',
+        fontSize: 15,
+      );
+      setState(() {
+        // Store the error message, to be used by validator
+        _emailError = 'Network error';
+        _isSigning = false;
+      });
+      return;
     } else {
       // Email is a duplicate
       setState(() {

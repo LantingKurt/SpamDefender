@@ -101,6 +101,13 @@ class FirebaseAuthService {
               'No network connection. Please connect to your internet and try again.',
           fontSize: 15,
         );
+      }
+      else if (e.code == 'too-many-requests') {
+        showToast(
+          message:
+          'Too many requests. Please try again later.',
+          fontSize: 15,
+        );
       } else {
         showToast(message: 'An error occurred: ${e.code}');
       }
