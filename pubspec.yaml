@@ -47,6 +47,11 @@ dependencies:
   intl: any
   build_runner: ^2.4.15
 
+  # access to contacts locally
+  flutter_contacts: ^1.1.7
+  permission_handler: ^11.3.1 # Optional, still works if you prefer it
+  flutter_screenutil: ^5.9.0
+
 
 
 dev_dependencies:

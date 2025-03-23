@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spamdefender/contacts_page.dart';
 
 // UI Screens
 import 'sign_up.dart';
@@ -53,6 +54,7 @@ class WelcomeScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
+                  // test contact screen
                   MaterialPageRoute(builder: (context) => LoginScreen()),
                 );
               },
@@ -82,6 +84,26 @@ class WelcomeScreen extends StatelessWidget {
                 minimumSize: Size(200, 40),
               ),
               child: Text('SIGN UP'),
+            ),
+          ),
+          Positioned(
+            top: 470,
+            left: 150,
+            child: OutlinedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  // test contact screen
+                  MaterialPageRoute(builder: (context) => ContactsPage()),
+                );
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Color(0xFF050a30),
+                side: BorderSide(color: Color(0xFF050a30), width: 2),
+                minimumSize: Size(200, 40),
+              ),
+              child: Text('Contacts Page Test'),
             ),
           ),
         ], // children

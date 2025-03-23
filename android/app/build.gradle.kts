@@ -30,6 +30,7 @@ dependencies {
 }
 
 android {
+    //namespace = "com.vnnhnlabs.contactsservice"
     namespace = "up.edu.ph.spamdefender"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
