@@ -9,6 +9,7 @@ import 'welcome.dart';
 import 'whitelist_contacts.dart';
 import 'blacklist_contacts.dart';
 import 'notification.dart';
+import 'safe_messages.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -74,13 +75,22 @@ class HomeScreen extends StatelessWidget {
             Positioned(
               top: 20,
               right: 12,
-              child: Image.asset(
-                'images/safemessages.png',
-                width: MediaQuery.of(context).size.width * 0.45,
-                height: MediaQuery.of(context).size.height * 1.3,
-                fit: BoxFit.contain,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SafeMessages()),
+                  );
+                },
+                child: Image.asset(
+                  'images/safemessages.png',
+                  width: MediaQuery.of(context).size.width * 0.45,
+                  height: MediaQuery.of(context).size.height * 1.3,
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
+
 
             // Whitelist Contacts button
             Positioned(
