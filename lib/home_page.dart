@@ -10,6 +10,8 @@ import 'whitelist_contacts.dart';
 import 'blacklist_contacts.dart';
 import 'notification.dart';
 import 'safe_messages.dart';
+import 'spam_messages.dart';
+
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -63,13 +65,21 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             Positioned(
-              top: 100,
+              top: 20,
               left: 12,
-              child: Image.asset(
-                'images/spammessages.png',
-                width: MediaQuery.of(context).size.width * 0.45,
-                height: MediaQuery.of(context).size.height,
-                fit: BoxFit.contain,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SpamMessages()),
+                  );
+                },
+                child: Image.asset(
+                  'images/spammessages.png',
+                  width: MediaQuery.of(context).size.width * 0.45,
+                  height: MediaQuery.of(context).size.height * 1.3,
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
             Positioned(

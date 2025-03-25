@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class SafeMessages extends StatefulWidget {
-  const SafeMessages({super.key});
+class SpamMessages extends StatefulWidget {
+  const SpamMessages({super.key});
 
   @override
-  SafeMessagesState createState() => SafeMessagesState();
+  SpamMessagesState createState() => SpamMessagesState();
 }
 
-class SafeMessagesState extends State<SafeMessages> {
+class SpamMessagesState extends State<SpamMessages> {
   final List<Map<String, String>> messages = [
     {'sender': 'ShopMore PH', 'message': "Congratulations! You've won a voucher worth PHP 1,000. Claim it now..."},
     {'sender': 'BPI Bank Alert', 'message': "IMPORTANT: Your BPI account has been locked due to suspicious login attempts..."},
@@ -16,7 +16,6 @@ class SafeMessagesState extends State<SafeMessages> {
     {'sender': 'Bes', 'message': "Hi Bes! Kamusta ka na? Kamusta ang buhay mo diyan sa Manila? Kita tayo soon!"},
     {'sender': 'Ella', 'message': "Friend, may alam ka bang masarap na kainan sa BGC? Date night namin ni bf eh!"},
     {'sender': 'Mom', 'message': "Anak, kumain ka na ba? Huwag mong kalimutang magpahinga ha. Laging alagaan ang sarili."},
-    {'sender': 'Love', 'message': "Hi baby! Kamusta araw mo? Pagod ka ba? Sana nakakapagpahinga ka na. Can't wait to..."},
   ];
 
   int selectedIndex = 0;
@@ -90,11 +89,11 @@ class SafeMessagesState extends State<SafeMessages> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildTab('Safe Messages', 0),
+                _buildTab('Safe Messages', -1),
                 SizedBox(width: 10),
-                _buildTab('Spam Messages', 1),
+                _buildTab('Spam Messages', 0),
                 SizedBox(width: 10),
-                _buildTab('All Texts', 2),
+                _buildTab('All Texts', 1),
               ],
             ),
           ),
