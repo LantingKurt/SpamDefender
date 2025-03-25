@@ -13,7 +13,6 @@ class WhitelistScreen extends StatefulWidget {
   WhitelistScreenState createState() => WhitelistScreenState();
 }
 
-
 class WhitelistScreenState extends State<WhitelistScreen> {
   final List<Map<String, String>> whitelist = [
     {'name': 'Elle', 'phone': '123-456-7890'},
@@ -68,7 +67,7 @@ class WhitelistScreenState extends State<WhitelistScreen> {
 
     int itemCount = sectionHeaders.fold<int>(
       0,
-          (sum, letter) => sum + 1 + groupedContacts[letter]!.length,
+      (sum, letter) => sum + 1 + groupedContacts[letter]!.length,
     );
 
     return Scaffold(
@@ -216,8 +215,8 @@ class WhitelistScreenState extends State<WhitelistScreen> {
                   for (var section in sectionHeaders) {
                     int currentSectionItemCount =
                         1 +
-                            groupedContacts[section]!
-                                .length; // 1 for the header + contacts
+                        groupedContacts[section]!
+                            .length; // 1 for the header + contacts
 
                     if (index < sectionIndex + currentSectionItemCount) {
                       letter = section;
@@ -276,10 +275,13 @@ class WhitelistScreenState extends State<WhitelistScreen> {
                                         MaterialPageRoute(
                                           builder:
                                               (context) => EditContactScreen(
-                                            contact: contact,
-                                            index: contactIndex,
-                                            onUpdate: _updateContact,
-                                          ),
+                                                contact: contact,
+                                                // Use the actual index from whitelist instead of the section index
+                                                index: whitelist.indexOf(
+                                                  contact,
+                                                ),
+                                                onUpdate: _updateContact,
+                                              ),
                                         ),
                                       );
                                     },
@@ -311,4 +313,3 @@ class WhitelistScreenState extends State<WhitelistScreen> {
     );
   }
 }
-
