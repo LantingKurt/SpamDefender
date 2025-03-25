@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'edit_contacts.dart';
+import 'add_contacts.dart';
 
 // Firebase Implementation
 
-// WHITELIST CONTACTS //
+// BLACKLIST CONTACTS //
 class BlacklistScreen extends StatefulWidget {
   const BlacklistScreen({super.key});
 
@@ -26,6 +28,25 @@ class BlacklistScreenState extends State<BlacklistScreen> {
     {'name': 'Nicholas Lanting', 'phone': '117-567-8901'},
     {'name': 'Ton Chio', 'phone': '118-567-8901'},
   ];
+
+  // Modify _deleteContact to remove by contact rather than index
+  void _deleteContact(Map<String, String> contact) {
+    setState(() {
+      blacklist.remove(contact);
+    });
+  }
+
+  void _updateContact(Map<String, String> updatedContact, int index) {
+    setState(() {
+      blacklist[index] = updatedContact;
+    });
+  }
+
+  void _addNewContact(Map<String, String> newContact) {
+    setState(() {
+      blacklist.add(newContact);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +91,8 @@ class BlacklistScreenState extends State<BlacklistScreen> {
               children: [
                 // Back arrow icon button
                 IconButton(
-                  icon: Icon(Icons.arrow_back_ios, color: Color(0xddffad49)), // Back arrow icon
+                  icon: Icon(Icons.arrow_back_ios, color: Color(0xddffad49)),
+                  // Back arrow icon
                   onPressed: () {
                     Navigator.pop(context);
                   },
@@ -101,6 +123,23 @@ class BlacklistScreenState extends State<BlacklistScreen> {
             ),
           ),
           Positioned(
+            top: 75.0,
+            right: 25.0,
+            child: IconButton(
+              icon: Icon(Icons.add, color: Colors.white, size: 30),
+              // Back arrow icon
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => AddContactScreen(onAdd: _addNewContact),
+                  ),
+                );
+              },
+            ),
+          ),
+          Positioned(
             top: 140.0,
             left: 10,
             right: 30.0,
@@ -109,31 +148,22 @@ class BlacklistScreenState extends State<BlacklistScreen> {
               decoration: InputDecoration(
                 hintText: 'Search by name or number',
                 border: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.grey,
-                    width: 1.5,
-                  ),
+                  borderSide: BorderSide(color: Colors.grey, width: 1.5),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.grey,
-                    width: 1.5,
-                  ),
+                  borderSide: BorderSide(color: Colors.grey, width: 1.5),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.blue,
-                    width: 1.5,
-                  ),
+                  borderSide: BorderSide(color: Colors.blue, width: 1.5),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: Color(0xFF050a30),
+                prefixIcon: Icon(Icons.search, color: Color(0xFF050a30)),
+                contentPadding: EdgeInsets.symmetric(
+                  vertical: 10.0,
+                  horizontal: 15.0,
                 ),
-                contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
                 filled: true,
                 fillColor: Colors.white,
                 isDense: true,
@@ -149,10 +179,7 @@ class BlacklistScreenState extends State<BlacklistScreen> {
             child: Card(
               elevation: 0,
               child: ListTile(
-                leading: Icon(
-                  Icons.person,
-                  size: 60.0,
-                ),
+                leading: Icon(Icons.person, size: 60.0),
                 title: Text(
                   'My Name',
                   style: TextStyle(
@@ -162,17 +189,18 @@ class BlacklistScreenState extends State<BlacklistScreen> {
                     color: Colors.black,
                   ),
                 ),
-                subtitle: Text('000-000-0000', style: TextStyle(
-                  fontFamily: 'Mosafin',
-                  fontSize: 15.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+                subtitle: Text(
+                  '000-000-0000',
+                  style: TextStyle(
+                    fontFamily: 'Mosafin',
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
               ),
             ),
           ),
-
           SafeArea(
             child: Padding(
               padding: EdgeInsets.only(top: 260),
@@ -184,7 +212,10 @@ class BlacklistScreenState extends State<BlacklistScreen> {
                   List<Map<String, String>> contacts = [];
 
                   for (var section in sectionHeaders) {
-                    int currentSectionItemCount = 1 + groupedContacts[section]!.length; // 1 for the header + contacts
+                    int currentSectionItemCount =
+                        1 +
+                            groupedContacts[section]!
+                                .length; // 1 for the header + contacts
 
                     if (index < sectionIndex + currentSectionItemCount) {
                       letter = section;
@@ -197,13 +228,19 @@ class BlacklistScreenState extends State<BlacklistScreen> {
 
                   if (index == sectionIndex) {
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10.0,
+                        horizontal: 15.0,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             letter,
-                            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           Container(
                             height: 2,
@@ -223,10 +260,45 @@ class BlacklistScreenState extends State<BlacklistScreen> {
                       trailing: IconButton(
                         icon: Icon(Icons.more_horiz),
                         onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (context) {
+                              return ListView(
+                                children: <Widget>[
+                                  ListTile(
+                                    title: Text('Edit'),
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) => EditContactScreen(
+                                            contact: contact,
+                                            // Use the actual index from whitelist instead of the section index
+                                            index: blacklist.indexOf(
+                                              contact,
+                                            ),
+                                            onUpdate: _updateContact,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  ListTile(
+                                    title: Text('Delete'),
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      _deleteContact(contact);
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
                         },
                       ),
-                      onTap: () {
-                      },
+                      onTap: () {},
                     );
                   }
 
