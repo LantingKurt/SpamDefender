@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../home_page.dart';
 import 'spam_messages.dart';
+import 'messages_data.dart';
 
 class SafeMessages extends StatefulWidget {
   const SafeMessages({super.key});
@@ -11,16 +12,7 @@ class SafeMessages extends StatefulWidget {
 }
 
 class SafeMessagesState extends State<SafeMessages> {
-  final List<Map<String, String>> messages = [
-    {'sender': 'ShopMore PH', 'message': "Congratulations! You've won a voucher worth PHP 1,000. Claim it now..."},
-    {'sender': 'BPI Bank Alert', 'message': "IMPORTANT: Your BPI account has been locked due to suspicious login attempts..."},
-    {'sender': 'Maya Pay', 'message': "PHP 4,800 has been sent to your Maya account. Verify the transaction at..."},
-    {'sender': 'Maya', 'message': "A deposit of PHP 2,650.00 is on its way. Please visit Maya.ph to verify your account..."},
-    {'sender': 'Bes', 'message': "Hi Bes! Kamusta ka na? Kamusta ang buhay mo diyan sa Manila? Kita tayo soon!"},
-    {'sender': 'Ella', 'message': "Friend, may alam ka bang masarap na kainan sa BGC? Date night namin ni bf eh!"},
-    {'sender': 'Mom', 'message': "Anak, kumain ka na ba? Huwag mong kalimutang magpahinga ha. Laging alagaan ang sarili."},
-    {'sender': 'Love', 'message': "Hello."},
-  ];
+  List<Map<String, String>> get allMessages => [...safeMessages, ...spamMessages];
 
   int selectedIndex = 0;
 
@@ -95,30 +87,33 @@ class SafeMessagesState extends State<SafeMessages> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildTab('Safe Messages', 0,  onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => SafeMessages()), //
-              );
-            }),
+                _buildTab('Safe Messages', 0, onPressed: () {
+                  setState(() {
+                    selectedIndex = 0;
+                  });
+                }),
                 SizedBox(width: 10),
                 _buildTab('Spam Messages', 1, onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => SpamMessages()), //
+                    MaterialPageRoute(builder: (context) => SpamMessages()),
                   );
                 }),
                 SizedBox(width: 10),
-                _buildTab('All Texts', 2),
+                _buildTab('All Texts', 2, onPressed: () {
+                  setState(() {
+                    selectedIndex = 2;
+                  });
+                }),
               ],
             ),
           ),
           Padding(
             padding: EdgeInsets.only(top: 140),
             child: ListView.builder(
-              itemCount: messages.length,
+              itemCount: selectedIndex == 2 ? allMessages.length : safeMessages.length,
               itemBuilder: (context, index) {
-                final message = messages[index];
+                final message = selectedIndex == 2 ? allMessages[index] : safeMessages[index];
                 return ListTile(
                   leading: Icon(Icons.person, size: 40.0, color: Colors.grey),
                   title: Text(

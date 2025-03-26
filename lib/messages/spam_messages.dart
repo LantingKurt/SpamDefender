@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../home_page.dart';
 import 'safe_messages.dart';
 
-
+// Data
+import 'messages_data.dart';
 
 class SpamMessages extends StatefulWidget {
   const SpamMessages({super.key});
@@ -13,15 +14,7 @@ class SpamMessages extends StatefulWidget {
 }
 
 class SpamMessagesState extends State<SpamMessages> {
-  final List<Map<String, String>> messages = [
-    {'sender': 'ShopMore PH', 'message': "Congratulations! You've won a voucher worth PHP 1,000. Claim it now..."},
-    {'sender': 'BPI Bank Alert', 'message': "IMPORTANT: Your BPI account has been locked due to suspicious login attempts..."},
-    {'sender': 'Maya Pay', 'message': "PHP 4,800 has been sent to your Maya account. Verify the transaction at..."},
-    {'sender': 'Maya', 'message': "A deposit of PHP 2,650.00 is on its way. Please visit Maya.ph to verify your account..."},
-    {'sender': 'Bes', 'message': "Hi Bes! Kamusta ka na? Kamusta ang buhay mo diyan sa Manila? Kita tayo soon!"},
-    {'sender': 'Ella', 'message': "Friend, may alam ka bang masarap na kainan sa BGC? Date night namin ni bf eh!"},
-    {'sender': 'Mom', 'message': "Anak, kumain ka na ba? Huwag mong kalimutang magpahinga ha. Laging alagaan ang sarili."},
-  ];
+  List<Map<String, String>> get allMessages => [...spamMessages, ...safeMessages];
 
   int selectedIndex = 0;
 
@@ -111,16 +104,20 @@ class SpamMessagesState extends State<SpamMessages> {
                   );
                 }),
                 SizedBox(width: 10),
-                _buildTab('All Texts', 1),
+                _buildTab('All Texts', 1, onPressed: () {
+                  setState(() {
+                    selectedIndex = 1;
+                  });
+                }),
               ],
             ),
           ),
           Padding(
             padding: EdgeInsets.only(top: 140),
             child: ListView.builder(
-              itemCount: messages.length,
+              itemCount: selectedIndex == 1 ? allMessages.length : spamMessages.length,
               itemBuilder: (context, index) {
-                final message = messages[index];
+                final message = selectedIndex == 1 ? allMessages[index] : spamMessages[index];
                 return ListTile(
                   leading: Icon(Icons.person, size: 40.0, color: Colors.grey),
                   title: Text(
