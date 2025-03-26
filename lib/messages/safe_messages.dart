@@ -1,5 +1,7 @@
 // Flutter Dependencies
 import 'package:flutter/material.dart';
+import '../home_page.dart';
+import 'spam_messages.dart';
 
 class SafeMessages extends StatefulWidget {
   const SafeMessages({super.key});
@@ -17,7 +19,7 @@ class SafeMessagesState extends State<SafeMessages> {
     {'sender': 'Bes', 'message': "Hi Bes! Kamusta ka na? Kamusta ang buhay mo diyan sa Manila? Kita tayo soon!"},
     {'sender': 'Ella', 'message': "Friend, may alam ka bang masarap na kainan sa BGC? Date night namin ni bf eh!"},
     {'sender': 'Mom', 'message': "Anak, kumain ka na ba? Huwag mong kalimutang magpahinga ha. Laging alagaan ang sarili."},
-    {'sender': 'Love', 'message': "Hi baby! Kamusta araw mo? Pagod ka ba? Sana nakakapagpahinga ka na. Can't wait to..."},
+    {'sender': 'Love', 'message': "Hello."},
   ];
 
   int selectedIndex = 0;
@@ -77,8 +79,10 @@ class SafeMessagesState extends State<SafeMessages> {
                   child: IconButton(
                     icon: Icon(Icons.edit, color: Colors.white),
                     onPressed: () {
-                      Navigator.pop(context);
-                    },
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => HomeScreen()), //
+                      );                    },
                   ),
                 ),
               ],
@@ -91,9 +95,19 @@ class SafeMessagesState extends State<SafeMessages> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildTab('Safe Messages', 0),
+                _buildTab('Safe Messages', 0,  onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SafeMessages()), //
+              );
+            }),
                 SizedBox(width: 10),
-                _buildTab('Spam Messages', 1),
+                _buildTab('Spam Messages', 1, onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SpamMessages()), //
+                  );
+                }),
                 SizedBox(width: 10),
                 _buildTab('All Texts', 2),
               ],
@@ -127,12 +141,16 @@ class SafeMessagesState extends State<SafeMessages> {
     );
   }
 
-  Widget _buildTab(String title, int index) {
+  Widget _buildTab(String title, int index, {VoidCallback? onPressed}) {
     return GestureDetector(
       onTap: () {
         setState(() {
           selectedIndex = index;
         });
+
+        if (onPressed != null) {
+          onPressed(); // Call the function if provided
+        }
       },
       child: Column(
         children: [
@@ -155,6 +173,7 @@ class SafeMessagesState extends State<SafeMessages> {
       ),
     );
   }
+
 
   Widget _buildIconCircle(IconData icon) {
     return Container(

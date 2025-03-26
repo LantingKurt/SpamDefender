@@ -1,5 +1,9 @@
 // Flutter Dependencies
 import 'package:flutter/material.dart';
+import '../home_page.dart';
+import 'safe_messages.dart';
+
+
 
 class SpamMessages extends StatefulWidget {
   const SpamMessages({super.key});
@@ -53,7 +57,10 @@ class SpamMessagesState extends State<SpamMessages> {
                   child: IconButton(
                     icon: Icon(Icons.home, color: Colors.white),
                     onPressed: () {
-                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => HomeScreen()), //
+                      );
                     },
                   ),
                 ),
@@ -90,9 +97,19 @@ class SpamMessagesState extends State<SpamMessages> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildTab('Safe Messages', -1),
+                _buildTab('Safe Messages', -1,  onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SafeMessages()), //
+                  );
+                }),
                 SizedBox(width: 10),
-                _buildTab('Spam Messages', 0),
+                _buildTab('Spam Messages', 0, onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SpamMessages()), //
+                  );
+                }),
                 SizedBox(width: 10),
                 _buildTab('All Texts', 1),
               ],
@@ -126,12 +143,16 @@ class SpamMessagesState extends State<SpamMessages> {
     );
   }
 
-  Widget _buildTab(String title, int index) {
+  Widget _buildTab(String title, int index, {VoidCallback? onPressed}) {
     return GestureDetector(
       onTap: () {
         setState(() {
           selectedIndex = index;
         });
+
+        if (onPressed != null) {
+          onPressed();
+        }
       },
       child: Column(
         children: [
@@ -154,7 +175,6 @@ class SpamMessagesState extends State<SpamMessages> {
       ),
     );
   }
-
   Widget _buildIconCircle(IconData icon) {
     return Container(
       width: 40,
