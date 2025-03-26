@@ -1,7 +1,7 @@
+// Flutter Dependencies
 import 'package:flutter/material.dart';
 
-// Firebase Implementation
-
+// UI Screens
 import 'edit_contacts.dart';
 import 'add_contacts.dart';
 

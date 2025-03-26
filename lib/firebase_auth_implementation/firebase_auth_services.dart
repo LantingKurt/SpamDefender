@@ -2,7 +2,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
 // Toast Notif
-import 'package:spamdefender/global/common/toast.dart';
+import 'package:spamdefender/global/toast.dart';
 
 // Utils
 import 'package:spamdefender/utils/validation.dart';

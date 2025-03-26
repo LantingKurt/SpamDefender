@@ -1,8 +1,9 @@
+// Flutter Dependencies
 import 'package:flutter/material.dart';
+
+// UI Screens
 import 'edit_contacts.dart';
 import 'add_contacts.dart';
-
-// Firebase Implementation
 
 // BLACKLIST CONTACTS //
 class BlacklistScreen extends StatefulWidget {

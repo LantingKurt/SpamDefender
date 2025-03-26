@@ -10,7 +10,7 @@ import 'log_in.dart';
 import 'welcome.dart';
 
 // Toast Notif
-import 'package:spamdefender/global/common/toast.dart';
+import 'package:spamdefender/global/toast.dart';
 
 // Utils
 import 'utils/validation.dart';

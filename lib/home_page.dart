@@ -6,11 +6,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 // UI Screens
 import 'welcome.dart';
-import 'whitelist_contacts.dart';
-import 'blacklist_contacts.dart';
+import 'contacts_native/whitelist_contacts.dart';
+import 'contacts_native/blacklist_contacts.dart';
 import 'notification.dart';
-import 'safe_messages.dart';
-import 'spam_messages.dart';
+import 'messages/safe_messages.dart';
+import 'messages/spam_messages.dart';
 
 
 class HomeScreen extends StatelessWidget {

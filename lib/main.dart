@@ -1,28 +1,16 @@
-// Flutter Dependencies -----------------------------------------------------------------
+// Flutter Dependencies
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-//----------------------------------------------------------------------------------------
 
-// Firebase Implementation --------------------------------------------------------------
+// Firebase Implementation
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:spamdefender/firebase_options.dart';
+import 'package:spamdefender/firebase_auth_implementation/firebase_options.dart';
 
-//import 'package:firebase_auth/firebase_auth.dart';
-//import 'firebase_auth_services.dart';
-//----------------------------------------------------------------------------------------
-
-// UI Screens -------------------------------
+// UI Screens
 import 'splash_screen.dart';
 
-//import 'welcome.dart';
-//import 'log_in.dart';
-//import 'sign_up.dart';
-
-//import 'home_page.dart';
-//import 'whitelist_contacts.dart';
-// ------------------------------------------
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
