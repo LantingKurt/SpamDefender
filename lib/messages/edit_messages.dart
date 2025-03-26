@@ -1,22 +1,87 @@
-// Flutter Dependencies
 import 'package:flutter/material.dart';
-import '../home_page.dart';
+import 'safe_messages.dart';
 import 'spam_messages.dart';
-import 'messages_data.dart';
-import 'edit_messages.dart';
 
 
-class SafeMessages extends StatefulWidget {
-  const SafeMessages({super.key});
+class EditMessages extends StatefulWidget {
+  final List<Map<String, String>> messages;
+
+  EditMessages({required this.messages});
 
   @override
-  SafeMessagesState createState() => SafeMessagesState();
+  _EditMessagesState createState() => _EditMessagesState();
 }
 
-class SafeMessagesState extends State<SafeMessages> {
-  List<Map<String, String>> get allMessages => [...safeMessages, ...spamMessages];
-
+class _EditMessagesState extends State<EditMessages> {
+  Map<int, bool> selectedMessages = {};
   int selectedIndex = 0;
+
+  void _showActionBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Color(0xFF0B0C42),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Select Action",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              SizedBox(height: 10),
+              _bottomSheetButton("Delete", Colors.red, () {
+                _deleteSelectedMessages();
+                Navigator.pop(context);
+              }),
+              _bottomSheetButton("Mark as Spam", Color(0xddffad49), () {
+                Navigator.pop(context);
+              }),
+              _bottomSheetButton("Cancel", Colors.grey, () {
+                Navigator.pop(context);
+              }),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _bottomSheetButton(String text, Color color, VoidCallback onPressed) {
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.symmetric(vertical: 5),
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: color, // Text color
+          padding: EdgeInsets.symmetric(vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+        onPressed: onPressed,
+        child: Text(text, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+
+  void _deleteSelectedMessages() {
+    setState(() {
+      widget.messages.removeWhere((message) => selectedMessages[widget.messages.indexOf(message)] ?? false);
+      selectedMessages.clear();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,17 +113,14 @@ class SafeMessagesState extends State<SafeMessages> {
                     color: Colors.black.withOpacity(0.7),
                   ),
                   child: IconButton(
-                    icon: Icon(Icons.home, color: Colors.white),
+                    icon: Icon(Icons.arrow_back, color: Colors.white),
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => HomeScreen()), //
-                      );
+                      Navigator.pop(context);
                     },
                   ),
                 ),
                 Text(
-                  'Messages',
+                  'Edit Messages',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 23,
@@ -71,16 +133,13 @@ class SafeMessagesState extends State<SafeMessages> {
                   height: 40,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.black.withOpacity(0.7),
+                    color: selectedMessages.containsValue(true)
+                        ? Color(0xddffad49).withOpacity(0.8)
+                        : Colors.grey.withOpacity(0.5),
                   ),
                   child: IconButton(
-                    icon: Icon(Icons.edit, color: Colors.white),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => EditMessages(messages: messages)),
-                      );
-                    },
+                    icon: Icon(Icons.delete, color: Colors.white),
+                    onPressed: selectedMessages.containsValue(true) ? _showActionBottomSheet : null,
                   ),
                 ),
               ],
@@ -93,10 +152,10 @@ class SafeMessagesState extends State<SafeMessages> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildTab('Safe Messages', 0,  onPressed: () {
+                _buildTab('Safe Messages', 0, onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => SafeMessages()), //
+                    MaterialPageRoute(builder: (context) => SafeMessages()),
                   );
                 }),
                 SizedBox(width: 10),
@@ -107,20 +166,16 @@ class SafeMessagesState extends State<SafeMessages> {
                   );
                 }),
                 SizedBox(width: 10),
-                _buildTab('All Texts', 2, onPressed: () {
-                  setState(() {
-                    selectedIndex = 2;
-                  });
-                }),
+                _buildTab('All Texts', 2),
               ],
             ),
           ),
           Padding(
             padding: EdgeInsets.only(top: 140),
             child: ListView.builder(
-              itemCount: selectedIndex == 2 ? allMessages.length : safeMessages.length,
+              itemCount: widget.messages.length,
               itemBuilder: (context, index) {
-                final message = selectedIndex == 2 ? allMessages[index] : safeMessages[index];
+                final message = widget.messages[index];
                 return ListTile(
                   leading: Icon(Icons.person, size: 40.0, color: Colors.grey),
                   title: Text(
@@ -133,7 +188,19 @@ class SafeMessagesState extends State<SafeMessages> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontFamily: 'Mosafin'),
                   ),
-                  onTap: () {},
+                  trailing: Checkbox(
+                    value: selectedMessages[index] ?? false,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        selectedMessages[index] = value ?? false;
+                      });
+                    },
+                  ),
+                  onTap: () {
+                    setState(() {
+                      selectedMessages[index] = !(selectedMessages[index] ?? false);
+                    });
+                  },
                 );
               },
             ),
@@ -151,7 +218,7 @@ class SafeMessagesState extends State<SafeMessages> {
         });
 
         if (onPressed != null) {
-          onPressed(); // Call the function if provided
+          onPressed();
         }
       },
       child: Column(
@@ -172,22 +239,6 @@ class SafeMessagesState extends State<SafeMessages> {
               margin: EdgeInsets.only(top: 2),
             ),
         ],
-      ),
-    );
-  }
-
-
-  Widget _buildIconCircle(IconData icon) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.black.withOpacity(0.4),
-      ),
-      child: IconButton(
-        icon: Icon(icon, color: Colors.white),
-        onPressed: () {},
       ),
     );
   }
