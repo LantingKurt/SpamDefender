@@ -53,6 +53,11 @@ dependencies:
   flutter_screenutil: ^5.9.0
 
 
+  # messages/SMS access:
+  telephony: ^0.2.0
+  #telephony: ^2.12.0
+
+
 
 dev_dependencies:
   flutter_test:
