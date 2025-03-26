@@ -35,7 +35,7 @@ class ValidationUtils {
 
     // check password length maximum
     if (password.length > 37) {
-      failedPasswordSignUpCriteria.add('be 37 characters or less');
+      failedPasswordSignUpCriteria.add('be 37 characters or less\n');
     }
 
     // Check for at least one uppercase letter

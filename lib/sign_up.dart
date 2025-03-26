@@ -7,6 +7,7 @@ import 'package:spamdefender/firebase_auth_implementation/firebase_auth_services
 // UI Screens
 import 'home_page.dart';
 import 'log_in.dart';
+import 'welcome.dart';
 
 // Toast Notif
 import 'package:spamdefender/global/common/toast.dart';
@@ -26,6 +27,7 @@ class SignupScreenState extends State<SignupScreen> {
 
   bool isButtonActive = false;
   bool _isSigning = false;
+  bool _isPasswordVisible = false;
   String errorMessage = '';
   String _emailError = '';
   String _passwordError = '';
@@ -189,12 +191,13 @@ class SignupScreenState extends State<SignupScreen> {
 
   Widget _buildFirstPage() {
     return PopScope(
+      canPop: true, // Prevents default back navigation
       onPopInvokedWithResult: (bool didPop, Object? result) {
         if (!didPop) {
           // Navigate back to the first page
-          _pageController.previousPage(
-            duration: Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => WelcomeScreen()),
           );
         }
       },
@@ -422,12 +425,25 @@ class SignupScreenState extends State<SignupScreen> {
             child: TextFormField(
               key: Key('passwordField'),
               controller: _passwordController,
+              obscureText: !_isPasswordVisible,
               textInputAction: TextInputAction.next,
               decoration: InputDecoration(
                 hintText: 'Enter password',
                 border: OutlineInputBorder(),
                 errorStyle: TextStyle(fontSize: 9.0),
                 errorMaxLines: 10,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
+                ),
               ),
               validator: (value) {
                 if (_passwordError.isNotEmpty) {
@@ -464,15 +480,37 @@ class SignupScreenState extends State<SignupScreen> {
             top: 465.0,
             left: 30.0,
             right: 30.0,
-            child: TextField(
+            child: TextFormField(
               key: Key('confirmpasswordField'),
               controller: _confirmpasswordController,
+              obscureText: !_isPasswordVisible,
               textInputAction: TextInputAction.done,
-              obscureText: true,
               decoration: InputDecoration(
                 hintText: 'Confirm password',
                 border: OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
+                ),
               ),
+              validator: (value) {
+
+                bool passwordmatch =  _passwordController.text == _confirmpasswordController.text;
+                if (passwordmatch) {
+                  return null;
+                } else {
+                  return 'Password must match';
+                }
+              },
+              autovalidateMode: AutovalidateMode.onUserInteraction,
             ),
           ),
           Align(

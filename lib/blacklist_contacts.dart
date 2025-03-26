@@ -14,19 +14,19 @@ class BlacklistScreen extends StatefulWidget {
 
 class BlacklistScreenState extends State<BlacklistScreen> {
   final List<Map<String, String>> blacklist = [
-    {'name': 'Elle', 'phone': '123-456-7890'},
-    {'name': 'Kurt', 'phone': '987-654-3210'},
-    {'name': 'Wana', 'phone': '555-123-4567'},
-    {'name': 'Anton', 'phone': '444-234-5678'},
-    {'name': 'Rei Germar', 'phone': '333-345-6789'},
-    {'name': 'Ella Gatchalian', 'phone': '222-456-7891'},
-    {'name': 'Lily Cruz', 'phone': '112-567-8901'},
-    {'name': 'Mica Millano', 'phone': '113-567-8901'},
-    {'name': 'Andrea Brillantes', 'phone': '114-567-8901'},
-    {'name': 'Janelle Mendoza', 'phone': '115-567-8901'},
-    {'name': 'Joana Murillo', 'phone': '116-567-8901'},
-    {'name': 'Nicholas Lanting', 'phone': '117-567-8901'},
-    {'name': 'Ton Chio', 'phone': '118-567-8901'},
+    {'name': 'Scam Likely', 'phone': '123-456-7890'},
+    {'name': 'Fraudster Kurt', 'phone': '987-654-3210'},
+    {'name': 'Shady Wana', 'phone': '555-123-4567'},
+    {'name': 'Anton Swindle', 'phone': '444-234-5678'},
+    {'name': 'Rei Phisher', 'phone': '333-345-6789'},
+    {'name': 'Ella Skimmer', 'phone': '222-456-7891'},
+    {'name': 'Lily Deception', 'phone': '112-567-8901'},
+    {'name': 'Mica Con', 'phone': '113-567-8901'},
+    {'name': 'Andrea Spoofer', 'phone': '114-567-8901'},
+    {'name': 'Janelle Fraud', 'phone': '115-567-8901'},
+    {'name': 'Joana Hustler', 'phone': '116-567-8901'},
+    {'name': 'Nicholas Ponzi', 'phone': '117-567-8901'},
+    {'name': 'Ton Chio Swindler', 'phone': '118-567-8901'},
   ];
 
   // Modify _deleteContact to remove by contact rather than index
