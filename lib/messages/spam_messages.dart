@@ -14,7 +14,11 @@ class SpamMessages extends StatefulWidget {
 }
 
 class SpamMessagesState extends State<SpamMessages> {
-  List<Map<String, String>> get allMessages => [...spamMessages, ...safeMessages];
+  List<Map<String, String>> get displayedMessages {
+    if (selectedIndex == -1) return safeMessages;
+    if (selectedIndex == 0) return spamMessages;
+    return [...safeMessages, ...spamMessages];
+  }
 
   int selectedIndex = 0;
 
@@ -90,34 +94,20 @@ class SpamMessagesState extends State<SpamMessages> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildTab('Safe Messages', -1,  onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SafeMessages()), //
-                  );
-                }),
+                _buildTab('Safe Messages', -1),
                 SizedBox(width: 10),
-                _buildTab('Spam Messages', 0, onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SpamMessages()), //
-                  );
-                }),
+                _buildTab('Spam Messages', 0),
                 SizedBox(width: 10),
-                _buildTab('All Texts', 1, onPressed: () {
-                  setState(() {
-                    selectedIndex = 1;
-                  });
-                }),
+                _buildTab('All Texts', 1),
               ],
             ),
           ),
           Padding(
             padding: EdgeInsets.only(top: 140),
             child: ListView.builder(
-              itemCount: selectedIndex == 1 ? allMessages.length : spamMessages.length,
+              itemCount: displayedMessages.length,
               itemBuilder: (context, index) {
-                final message = selectedIndex == 1 ? allMessages[index] : spamMessages[index];
+                final message = displayedMessages[index];
                 return ListTile(
                   leading: Icon(Icons.person, size: 40.0, color: Colors.grey),
                   title: Text(
@@ -140,16 +130,12 @@ class SpamMessagesState extends State<SpamMessages> {
     );
   }
 
-  Widget _buildTab(String title, int index, {VoidCallback? onPressed}) {
+  Widget _buildTab(String title, int index) {
     return GestureDetector(
       onTap: () {
         setState(() {
           selectedIndex = index;
         });
-
-        if (onPressed != null) {
-          onPressed();
-        }
       },
       child: Column(
         children: [
@@ -172,6 +158,7 @@ class SpamMessagesState extends State<SpamMessages> {
       ),
     );
   }
+
   Widget _buildIconCircle(IconData icon) {
     return Container(
       width: 40,

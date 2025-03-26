@@ -14,7 +14,11 @@ class SafeMessages extends StatefulWidget {
 }
 
 class SafeMessagesState extends State<SafeMessages> {
-  List<Map<String, String>> get allMessages => [...safeMessages, ...spamMessages];
+  List<Map<String, String>> get displayedMessages {
+    if (selectedIndex == 0) return safeMessages;
+    if (selectedIndex == 1) return spamMessages;
+    return [...safeMessages, ...spamMessages];
+  }
 
   int selectedIndex = 0;
 
@@ -78,7 +82,7 @@ class SafeMessagesState extends State<SafeMessages> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => EditMessages(messages: messages)),
+                        MaterialPageRoute(builder: (context) => EditMessages(messages: safeMessages)),
                       );
                     },
                   ),
@@ -93,34 +97,20 @@ class SafeMessagesState extends State<SafeMessages> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildTab('Safe Messages', 0,  onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SafeMessages()), //
-                  );
-                }),
+                _buildTab('Safe Messages', 0),
                 SizedBox(width: 10),
-                _buildTab('Spam Messages', 1, onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SpamMessages()),
-                  );
-                }),
+                _buildTab('Spam Messages', 1),
                 SizedBox(width: 10),
-                _buildTab('All Texts', 2, onPressed: () {
-                  setState(() {
-                    selectedIndex = 2;
-                  });
-                }),
+                _buildTab('All Texts', 2),
               ],
             ),
           ),
           Padding(
             padding: EdgeInsets.only(top: 140),
             child: ListView.builder(
-              itemCount: selectedIndex == 2 ? allMessages.length : safeMessages.length,
+              itemCount: displayedMessages.length,
               itemBuilder: (context, index) {
-                final message = selectedIndex == 2 ? allMessages[index] : safeMessages[index];
+                final message = displayedMessages[index];
                 return ListTile(
                   leading: Icon(Icons.person, size: 40.0, color: Colors.grey),
                   title: Text(
@@ -143,16 +133,12 @@ class SafeMessagesState extends State<SafeMessages> {
     );
   }
 
-  Widget _buildTab(String title, int index, {VoidCallback? onPressed}) {
+  Widget _buildTab(String title, int index) {
     return GestureDetector(
       onTap: () {
         setState(() {
           selectedIndex = index;
         });
-
-        if (onPressed != null) {
-          onPressed(); // Call the function if provided
-        }
       },
       child: Column(
         children: [
