@@ -29,6 +29,7 @@ class BlacklistScreenState extends State<BlacklistScreen> {
     {'name': 'Nicholas Ponzi', 'phone': '117-567-8901'},
     {'name': 'Ton Chio Swindler', 'phone': '118-567-8901'},
   ];
+  String _searchQuery = ''; // Search query variable
 
   // Modify _deleteContact to remove by contact rather than index
   void _deleteContact(Map<String, String> contact) {
@@ -51,11 +52,20 @@ class BlacklistScreenState extends State<BlacklistScreen> {
 
   @override
   Widget build(BuildContext context) {
-    blacklist.sort((a, b) => a['name']!.compareTo(b['name']!));
+    // Filter whitelist based on search query
+    List<Map<String, String>> filteredBlacklist =
+        blacklist.where((contact) {
+          final name = contact['name']!.toLowerCase();
+          final phone = contact['phone']!;
+          return name.contains(_searchQuery.toLowerCase()) ||
+              phone.contains(_searchQuery);
+        }).toList();
+
+    // Group filtered contacts alphabetically
 
     Map<String, List<Map<String, String>>> groupedContacts = {};
 
-    for (var contact in blacklist) {
+    for (var contact in filteredBlacklist) {
       String firstLetter = contact['name']![0].toUpperCase();
       if (!groupedContacts.containsKey(firstLetter)) {
         groupedContacts[firstLetter] = [];
@@ -67,7 +77,7 @@ class BlacklistScreenState extends State<BlacklistScreen> {
 
     int itemCount = sectionHeaders.fold<int>(
       0,
-          (sum, letter) => sum + 1 + groupedContacts[letter]!.length,
+      (sum, letter) => sum + 1 + groupedContacts[letter]!.length,
     );
 
     return Scaffold(
@@ -146,6 +156,11 @@ class BlacklistScreenState extends State<BlacklistScreen> {
             right: 30.0,
             child: TextField(
               key: Key('Search by name or number'),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
               decoration: InputDecoration(
                 hintText: 'Search by name or number',
                 border: OutlineInputBorder(
@@ -215,8 +230,8 @@ class BlacklistScreenState extends State<BlacklistScreen> {
                   for (var section in sectionHeaders) {
                     int currentSectionItemCount =
                         1 +
-                            groupedContacts[section]!
-                                .length; // 1 for the header + contacts
+                        groupedContacts[section]!
+                            .length; // 1 for the header + contacts
 
                     if (index < sectionIndex + currentSectionItemCount) {
                       letter = section;
@@ -275,13 +290,13 @@ class BlacklistScreenState extends State<BlacklistScreen> {
                                         MaterialPageRoute(
                                           builder:
                                               (context) => EditContactScreen(
-                                            contact: contact,
-                                            // Use the actual index from whitelist instead of the section index
-                                            index: blacklist.indexOf(
-                                              contact,
-                                            ),
-                                            onUpdate: _updateContact,
-                                          ),
+                                                contact: contact,
+                                                // Use the actual index from whitelist instead of the section index
+                                                index: blacklist.indexOf(
+                                                  contact,
+                                                ),
+                                                onUpdate: _updateContact,
+                                              ),
                                         ),
                                       );
                                     },

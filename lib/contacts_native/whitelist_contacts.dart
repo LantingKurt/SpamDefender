@@ -29,6 +29,7 @@ class WhitelistScreenState extends State<WhitelistScreen> {
     {'name': 'Nicholas Lanting', 'phone': '117-567-8901'},
     {'name': 'Ton Chio', 'phone': '118-567-8901'},
   ];
+  String _searchQuery = ''; // Search query variable
 
   // Modify _deleteContact to remove by contact rather than index
   void _deleteContact(Map<String, String> contact) {
@@ -51,11 +52,18 @@ class WhitelistScreenState extends State<WhitelistScreen> {
 
   @override
   Widget build(BuildContext context) {
-    whitelist.sort((a, b) => a['name']!.compareTo(b['name']!));
+    // Filter whitelist based on search query
+    List<Map<String, String>> filteredWhitelist =
+        whitelist.where((contact) {
+          final name = contact['name']!.toLowerCase();
+          final phone = contact['phone']!;
+          return name.contains(_searchQuery.toLowerCase()) ||
+              phone.contains(_searchQuery);
+        }).toList();
 
+    // Group filtered contacts alphabetically
     Map<String, List<Map<String, String>>> groupedContacts = {};
-
-    for (var contact in whitelist) {
+    for (var contact in filteredWhitelist) {
       String firstLetter = contact['name']![0].toUpperCase();
       if (!groupedContacts.containsKey(firstLetter)) {
         groupedContacts[firstLetter] = [];
@@ -146,6 +154,11 @@ class WhitelistScreenState extends State<WhitelistScreen> {
             right: 30.0,
             child: TextField(
               key: Key('Search by name or number'),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
               decoration: InputDecoration(
                 hintText: 'Search by name or number',
                 border: OutlineInputBorder(
