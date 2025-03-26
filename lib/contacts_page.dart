@@ -17,19 +17,101 @@ class _ContactsPageState extends State<ContactsPage> {
   bool isLoading = true;
   String _searchQuery = ''; // Search query variable
 
-  // Add a method to delete a contact
-  void _deleteContact(Contact contact) {
-    setState(() {
-      contacts.remove(contact);
-    });
+  // Delete a contact from the phone and update the local list
+  Future<void> _deleteContact(Contact contact) async {
+    try {
+      await FlutterContacts.deleteContact(contact);
+      setState(() {
+        contacts.remove(contact);
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Contact deleted successfully')));
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to delete contact: $e')));
+    }
   }
 
-  // Add a method to update a contact
-  void _updateContact(Contact updatedContact, int index) {
-    setState(() {
-      contacts[index] = updatedContact;
-    });
+  // Add a new contact to the phone and update the local list
+  Future<void> _addContact(String name, String phone) async {
+  if (await FlutterContacts.requestPermission()) {
+    final newContact = Contact(
+      displayName: name,
+      name: Name(first: name),
+      phones: [Phone(phone)],
+    );
+
+    try {
+      await FlutterContacts.insertContact(newContact);
+      await _fetchContacts();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Contact added successfully')));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to add contact: $e')));
+    }
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Permission denied')));
   }
+}
+
+// Edit an existing contact on the phone and update the local list
+Future<void> _editContact(
+  Contact contact,
+  String newPrefix,
+  String newFirstName,
+  String newMiddleName,
+  String newLastName,
+  String newSuffix,
+  String newPhone,
+) async {
+  final fullContact = await FlutterContacts.getContact(contact.id, withProperties: true, withAccounts: true);
+
+  if (fullContact == null) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to fetch full contact details')));
+    return;
+  }
+
+  // Update the name fields
+  fullContact.name.prefix = newPrefix.isNotEmpty ? newPrefix : fullContact.name.prefix;
+  fullContact.name.first = newFirstName.isNotEmpty ? newFirstName : fullContact.name.first;
+  fullContact.name.middle = newMiddleName.isNotEmpty ? newMiddleName : fullContact.name.middle;
+  fullContact.name.last = newLastName.isNotEmpty ? newLastName : fullContact.name.last;
+  fullContact.name.suffix = newSuffix.isNotEmpty ? newSuffix : fullContact.name.suffix;
+
+  // Ensure displayName is updated
+  fullContact.displayName = [
+    fullContact.name.prefix,
+    fullContact.name.first,
+    fullContact.name.middle,
+    fullContact.name.last,
+    fullContact.name.suffix
+  ].where((namePart) => namePart.isNotEmpty).join(' ');
+
+  // Update the phone number
+  if (newPhone.isNotEmpty) {
+    if (fullContact.phones.isNotEmpty) {
+      fullContact.phones[0] = Phone(newPhone);
+    } else {
+      fullContact.phones.add(Phone(newPhone));
+    }
+  }
+
+  try {
+    await fullContact.update();
+
+    setState(() {
+      final index = contacts.indexWhere((c) => c.id == contact.id);
+      if (index != -1) {
+        contacts[index] = fullContact;
+      }
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Contact updated successfully')));
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update contact: $e')));
+  }
+}
 
   @override
   void initState() {
@@ -37,30 +119,36 @@ class _ContactsPageState extends State<ContactsPage> {
     _fetchContacts();
   }
 
-  Future<void> _fetchContacts() async {
-    setState(() => isLoading = true);
-    if (await FlutterContacts.requestPermission()) {
-      try {
-        final fetchedContacts = await FlutterContacts.getContacts(
-          withProperties: true,
-        );
-        setState(() {
-          contacts = fetchedContacts;
-          isLoading = false;
-        });
-      } catch (e) {
-        setState(() => isLoading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
-      }
-    } else {
+Future<void> _fetchContacts() async {
+  setState(() => isLoading = true);
+  if (await FlutterContacts.requestPermission()) {
+    try {
+      final fetchedContacts = await FlutterContacts.getContacts(
+        withProperties: true,
+        withAccounts: true, // Ensure rawId is fetched
+      );
+
+      // Fetch full details
+      final detailedContacts = await Future.wait(
+        fetchedContacts.map((contact) async {
+          return await FlutterContacts.getContact(contact.id, withProperties: true, withAccounts: true);
+        }),
+      );
+
+      setState(() {
+        contacts = detailedContacts.whereType<Contact>().toList();
+        isLoading = false;
+      });
+    } catch (e) {
       setState(() => isLoading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Permission denied')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
+  } else {
+    setState(() => isLoading = false);
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Permission denied')));
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -129,13 +217,22 @@ class _ContactsPageState extends State<ContactsPage> {
             top: 80.0,
             left: 25.0,
             child: Text(
-              'Contacts',
+              'Whitelisted',
               style: TextStyle(
                 color: Color(0xffffffff),
                 fontSize: 25,
                 fontFamily: 'Mosafin',
                 fontWeight: FontWeight.bold,
               ),
+            ),
+          ),
+          Positioned(
+            top: 75.0,
+            right: 25.0,
+            child: IconButton(
+              icon: Icon(Icons.add, color: Colors.white, size: 30),
+              // Back arrow icon
+              onPressed: () => _showAddContactDialog(),
             ),
           ),
           Positioned(
@@ -242,35 +339,8 @@ class _ContactsPageState extends State<ContactsPage> {
                                                 title: Text('Edit'),
                                                 onTap: () {
                                                   Navigator.pop(context);
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          EditContactScreen(
-                                                        contact: {
-                                                          'name': name,
-                                                          'phone': phone,
-                                                        },
-                                                        index: contacts.indexOf(
-                                                          contact,
-                                                        ),
-                                                        onUpdate: (updatedContact,
-                                                            index) {
-                                                          final updated = Contact(
-                                                            displayName:
-                                                                updatedContact['name']!,
-                                                            phones: [
-                                                              Phone(
-                                                                updatedContact[
-                                                                    'phone']!,
-                                                              )
-                                                            ],
-                                                          );
-                                                          _updateContact(
-                                                              updated, index);
-                                                        },
-                                                      ),
-                                                    ),
+                                                  _showEditContactDialog(
+                                                    contact,
                                                   );
                                                 },
                                               ),
@@ -298,6 +368,126 @@ class _ContactsPageState extends State<ContactsPage> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddContactDialog(),
+        child: Icon(Icons.add),
+        backgroundColor: Color(0xddffad49),
+      ),
     );
   }
+
+  // Show a dialog to add a new contact
+  void _showAddContactDialog() {
+    final nameController = TextEditingController();
+    final phoneController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Add Contact'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(labelText: 'Name'),
+              ),
+              TextField(
+                controller: phoneController,
+                decoration: InputDecoration(labelText: 'Phone'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                _addContact(nameController.text, phoneController.text);
+                Navigator.pop(context);
+              },
+              child: Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Show a dialog to edit an existing contact
+  void _showEditContactDialog(Contact contact) {
+    final prefixController = TextEditingController(text: contact.name.prefix);
+    final firstNameController = TextEditingController(text: contact.name.first);
+    final middleNameController = TextEditingController(text: contact.name.middle);
+    final lastNameController = TextEditingController(text: contact.name.last);
+    final suffixController = TextEditingController(text: contact.name.suffix);
+    final phoneController = TextEditingController(
+      text: contact.phones.isNotEmpty ? contact.phones[0].number : '',
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Edit Contact'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: prefixController,
+                  decoration: InputDecoration(labelText: 'Name Prefix'),
+                ),
+                TextField(
+                  controller: firstNameController,
+                  decoration: InputDecoration(labelText: 'First Name'),
+                ),
+                TextField(
+                  controller: middleNameController,
+                  decoration: InputDecoration(labelText: 'Middle Name'),
+                ),
+                TextField(
+                  controller: lastNameController,
+                  decoration: InputDecoration(labelText: 'Last Name'),
+                ),
+                TextField(
+                  controller: suffixController,
+                  decoration: InputDecoration(labelText: 'Name Suffix'),
+                ),
+                TextField(
+                  controller: phoneController,
+                  decoration: InputDecoration(labelText: 'Phone'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                _editContact(
+                  contact,
+                  prefixController.text,
+                  firstNameController.text,
+                  middleNameController.text,
+                  lastNameController.text,
+                  suffixController.text,
+                  phoneController.text,
+                );
+                Navigator.pop(context); // Close dialog after saving
+              },
+              child: Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 }
