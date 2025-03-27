@@ -33,9 +33,28 @@ class WhitelistScreenState extends State<WhitelistScreen> {
 
   // Modify _deleteContact to remove by contact rather than index
   void _deleteContact(Map<String, String> contact) {
-    setState(() {
-      whitelist.remove(contact);
-    });
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Confirm Deletion'),
+        content: Text('Are you sure you want to delete this contact?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                whitelist.remove(contact);
+              });
+              Navigator.pop(context);
+            },
+            child: Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _updateContact(Map<String, String> updatedContact, int index) {
@@ -54,12 +73,12 @@ class WhitelistScreenState extends State<WhitelistScreen> {
   Widget build(BuildContext context) {
     // Filter whitelist based on search query
     List<Map<String, String>> filteredWhitelist =
-        whitelist.where((contact) {
-          final name = contact['name']!.toLowerCase();
-          final phone = contact['phone']!;
-          return name.contains(_searchQuery.toLowerCase()) ||
-              phone.contains(_searchQuery);
-        }).toList();
+    whitelist.where((contact) {
+      final name = contact['name']!.toLowerCase();
+      final phone = contact['phone']!;
+      return name.contains(_searchQuery.toLowerCase()) ||
+          phone.contains(_searchQuery);
+    }).toList();
 
     // Group filtered contacts alphabetically
     Map<String, List<Map<String, String>>> groupedContacts = {};
@@ -75,7 +94,7 @@ class WhitelistScreenState extends State<WhitelistScreen> {
 
     int itemCount = sectionHeaders.fold<int>(
       0,
-      (sum, letter) => sum + 1 + groupedContacts[letter]!.length,
+          (sum, letter) => sum + 1 + groupedContacts[letter]!.length,
     );
 
     return Scaffold(
@@ -228,8 +247,8 @@ class WhitelistScreenState extends State<WhitelistScreen> {
                   for (var section in sectionHeaders) {
                     int currentSectionItemCount =
                         1 +
-                        groupedContacts[section]!
-                            .length; // 1 for the header + contacts
+                            groupedContacts[section]!
+                                .length; // 1 for the header + contacts
 
                     if (index < sectionIndex + currentSectionItemCount) {
                       letter = section;
@@ -275,47 +294,73 @@ class WhitelistScreenState extends State<WhitelistScreen> {
                         icon: Icon(Icons.more_horiz),
                         onPressed: () {
                           showModalBottomSheet(
+
                             context: context,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(15.0)),
+                            ),
+                            backgroundColor: Color(0xFF050a30),
                             builder: (context) {
-                              return ListView(
-                                children: <Widget>[
-                                  ListTile(
-                                    title: Text('Edit'),
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder:
-                                              (context) => EditContactScreen(
-                                                contact: contact,
-                                                // Use the actual index from whitelist instead of the section index
-                                                index: whitelist.indexOf(
-                                                  contact,
+                              return Container(
+                                  padding: EdgeInsets.all(10),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.white,
+                                            foregroundColor: Color(0xFF050a30),
+                                            padding: EdgeInsets.symmetric(vertical: 15),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                          ),
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => EditContactScreen(
+                                                  contact: contact,
+                                                  index: whitelist.indexOf(contact),
+                                                  onUpdate: _updateContact,
                                                 ),
-                                                onUpdate: _updateContact,
                                               ),
+                                            );
+                                          },
+                                          child: Text('Edit', style: TextStyle(fontSize: 16)),
                                         ),
-                                      );
-                                    },
-                                  ),
-                                  ListTile(
-                                    title: Text('Delete'),
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      _deleteContact(contact);
-                                    },
-                                  ),
-                                ],
+                                      ),
+                                      SizedBox(height: 10),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.white,
+                                            foregroundColor: Colors.red,
+                                            padding: EdgeInsets.symmetric(vertical: 15),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                          ),
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                            _deleteContact(contact);
+                                          },
+                                          child: Text('Delete', style: TextStyle(fontSize: 16)),
+                                        ),
+                                      )
+                                    ],
+                                  )
                               );
                             },
                           );
                         },
                       ),
-                      onTap: () {},
                     );
                   }
-
                   return SizedBox.shrink();
                 },
               ),
