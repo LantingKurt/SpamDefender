@@ -109,14 +109,14 @@ class WelcomeScreen extends StatelessWidget {
             ),
           ),
           Positioned(
-            top: 510,
+            top: 520,
             left: 150,
             child: OutlinedButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   // test contact screen
-                  MaterialPageRoute(builder: (context) => MessagePage()),
+                  MaterialPageRoute(builder: (context) => MessagesPage()),
                 );
               },
               style: OutlinedButton.styleFrom(
