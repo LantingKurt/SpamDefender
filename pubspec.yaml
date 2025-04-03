@@ -54,7 +54,7 @@ dependencies:
 
 
   # messages/SMS access:
-  telephony: ^0.2.0
+  another_telephony: ^0.2.8
   #flutter_sms_inbox: ^1.0.3
 
 
