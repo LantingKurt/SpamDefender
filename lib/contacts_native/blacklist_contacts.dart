@@ -1,5 +1,6 @@
 // Flutter Dependencies
 import 'package:flutter/material.dart';
+import 'whitelist_contacts.dart' as whitelistFile;
 
 // UI Screens
 import 'edit_contacts.dart';
@@ -30,6 +31,15 @@ class BlacklistScreenState extends State<BlacklistScreen> {
     {'name': 'Ton Chio Swindler', 'phone': '118-567-8901'},
   ];
   String _searchQuery = ''; // Search query variable
+
+  // Mark Contact as Blacklist from Whitelist (and Vice Versa)
+  // Blacklist to Whitelist
+  // blacklist => actual list of all contacts in the blacklist
+  // contact => contact we want to transfer
+  void _markContactAsWhitelist(List<Map<String, String>> blacklist, Map<String, String> contact){
+    blacklist.removeWhere((item) => item['phone'] == contact['phone']);
+    whitelistFile.WhitelistScreenState().whitelist.insert(0, contact);
+  }
 
   // Modify _deleteContact to remove by contact rather than index
   void _deleteContact(Map<String, String> contact) {
