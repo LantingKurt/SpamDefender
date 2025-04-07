@@ -34,6 +34,18 @@ class HomeScreen extends StatelessWidget {
                 fit: BoxFit.contain,
               ),
             ),
+
+            Positioned(
+              top: -85,
+              left: 25,
+              child: Image.asset(
+                'images/keepinboxclean.png',
+                width: MediaQuery.of(context).size.width * 0.45,
+                height: MediaQuery.of(context).size.height * 0.45,
+                fit: BoxFit.contain,
+              ),
+            ),
+
             Positioned(
               top: -85,
               left: 20,
@@ -54,58 +66,112 @@ class HomeScreen extends StatelessWidget {
                 fit: BoxFit.contain,
               ),
             ),
+
             Positioned(
-              top: -90,
-              left: 12,
-              child: Image.asset(
-                'images/allmessages.png',
-                width: MediaQuery.of(context).size.width * 0.95,
-                height: MediaQuery.of(context).size.height,
-                fit: BoxFit.contain,
-              ),
-            ),
-            Positioned(
-              top: 20,
-              left: 12,
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SpamMessages()),
-                  );
-                },
+              top: -110,
+              left: 40,
+              right: 40,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
                 child: Image.asset(
-                  'images/spammessages.png',
-                  width: MediaQuery.of(context).size.width * 0.45,
-                  height: MediaQuery.of(context).size.height * 1.3,
+                  'images/allmessages.png',
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
                   fit: BoxFit.contain,
                 ),
               ),
+
             ),
+
+
             Positioned(
-              top: 20,
-              right: 12,
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SafeMessages()),
-                  );
-                },
-                child: Image.asset(
-                  'images/safemessages.png',
-                  width: MediaQuery.of(context).size.width * 0.45,
-                  height: MediaQuery.of(context).size.height * 1.3,
-                  fit: BoxFit.contain,
-                ),
+              top: -60,
+              left: 45,
+              right: 45,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SafeMessages()),
+                      );
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.asset(
+                        'images/safemessages.png',
+                        width: MediaQuery.of(context).size.width * 0.3,
+                        height: MediaQuery.of(context).size.height * 0.25,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SpamMessages()),
+                      );
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.asset(
+                        'images/spammessages.png',
+                        width: MediaQuery.of(context).size.width * 0.45,
+                        height: MediaQuery.of(context).size.height * 1.3,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+
+                  ),
+                ],
               ),
             ),
 
+
+            Positioned(
+              top: 360,
+              left: 40,
+              right: 40,
+              child: GestureDetector(
+                onTap: () {
+                  // Handle tap
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.asset(
+                    'images/recentlydeleted.png',
+                    width: MediaQuery.of(context).size.width * 0.7,
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+
+              ),
+            ),
+
+
+            Positioned(
+              bottom: 8,
+              left: 320,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.person,
+                  color: Colors.white,
+                  size: 35.0,
+                ),
+                onPressed: () {
+                },
+              ),
+            ),
 
             // Whitelist Contacts button
             Positioned(
               bottom: 8,
-              right: 50,
+              left: 250,
               child: IconButton(
                 icon: const Icon(
                   Icons.bookmark_border,
@@ -126,7 +192,7 @@ class HomeScreen extends StatelessWidget {
             // Blacklist Contacts button
             Positioned(
               bottom: 8,
-              right: 120,
+              left: 180,
               child: IconButton(
                 icon: const Icon(
                   Icons.block,
@@ -147,7 +213,7 @@ class HomeScreen extends StatelessWidget {
             // Notifications Button
             Positioned(
               bottom: 8,
-              right: 190,
+              left: 110,
               child: IconButton(
                 icon: const Icon(
                   Icons.settings,
@@ -168,17 +234,15 @@ class HomeScreen extends StatelessWidget {
             // Sign out button
             Positioned(
               bottom: 8,
-              left: 50,
+              left: 40,
               child: IconButton(
                 icon: const Icon(
-                  Icons.exit_to_app,
+                  Icons.home,
                   color: Colors.white,
                   size: 35.0,
                 ),
                 onPressed: () {
-                  FirebaseAuth.instance.signOut(); //Signs out on firebase
-                  // D/FirebaseAuth(25557): Notifying id token listeners about a sign-out event.
-                  // D/FirebaseAuth(25557): Notifying auth state listeners about a sign-out event.
+                  FirebaseAuth.instance.signOut();
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => WelcomeScreen()),
@@ -186,11 +250,10 @@ class HomeScreen extends StatelessWidget {
                 },
               ),
             ),
-
-
-          ], //body: Stack(
+          ],
         ),
       ),
     );
-  }    //  Widget build(BuildContext context) {
-}     //class HomeScreen extends StatelessWidget {
+  }
+}
+
