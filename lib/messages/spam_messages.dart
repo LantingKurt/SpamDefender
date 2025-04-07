@@ -1,7 +1,7 @@
 // Flutter Dependencies
 import 'package:flutter/material.dart';
 import '../home_page.dart';
-import 'safe_messages.dart';
+import 'message_page.dart';
 import 'edit_messages.dart';
 
 
@@ -130,7 +130,14 @@ class SpamMessagesState extends State<SpamMessages> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontFamily: 'Mosafin'),
                   ),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MessagePage(message: message),
+                      ),
+                    );
+                  },
                 );
               },
             ),

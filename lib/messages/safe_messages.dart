@@ -1,7 +1,7 @@
 // Flutter Dependencies
 import 'package:flutter/material.dart';
 import '../home_page.dart';
-import 'spam_messages.dart';
+import 'message_page.dart';
 import 'messages_data.dart';
 import 'edit_messages.dart';
 
@@ -128,7 +128,14 @@ class SafeMessagesState extends State<SafeMessages> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontFamily: 'Mosafin'),
                   ),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MessagePage(message: message),
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -163,21 +170,6 @@ class SafeMessagesState extends State<SafeMessages> {
               margin: EdgeInsets.only(top: 2),
             ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildIconCircle(IconData icon) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.black.withOpacity(0.4),
-      ),
-      child: IconButton(
-        icon: Icon(icon, color: Colors.white),
-        onPressed: () {},
       ),
     );
   }
