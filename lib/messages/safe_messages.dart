@@ -56,7 +56,7 @@ class SafeMessagesState extends State<SafeMessages> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => HomeScreen()), //
+                        MaterialPageRoute(builder: (context) => HomeScreen()),
                       );
                     },
                   ),
@@ -82,7 +82,12 @@ class SafeMessagesState extends State<SafeMessages> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => EditMessages(messages: safeMessages)),
+                        MaterialPageRoute(
+                          builder: (context) => EditMessages(
+                            messages: displayedMessages,
+                            selectedIndex: selectedIndex,
+                          ),
+                        ),
                       );
                     },
                   ),
@@ -161,7 +166,6 @@ class SafeMessagesState extends State<SafeMessages> {
       ),
     );
   }
-
 
   Widget _buildIconCircle(IconData icon) {
     return Container(

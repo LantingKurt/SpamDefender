@@ -5,8 +5,9 @@ import 'spam_messages.dart';
 
 class EditMessages extends StatefulWidget {
   final List<Map<String, String>> messages;
+  final int selectedIndex;
 
-  EditMessages({required this.messages});
+  EditMessages({required this.messages, required this.selectedIndex});
 
   @override
   _EditMessagesState createState() => _EditMessagesState();
@@ -14,7 +15,13 @@ class EditMessages extends StatefulWidget {
 
 class _EditMessagesState extends State<EditMessages> {
   Map<int, bool> selectedMessages = {};
-  int selectedIndex = 0;
+  late int selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedIndex = widget.selectedIndex;
+  }
 
   void _showActionBottomSheet() {
     showModalBottomSheet(
@@ -43,8 +50,8 @@ class _EditMessagesState extends State<EditMessages> {
               ),
               SizedBox(height: 10),
               _bottomSheetButton("Delete", Colors.red, () {
-                _deleteSelectedMessages();
                 Navigator.pop(context);
+                _confirmDelete();
               }),
               _bottomSheetButton("Mark as Spam", Color(0xddffad49), () {
                 Navigator.pop(context);
@@ -59,6 +66,31 @@ class _EditMessagesState extends State<EditMessages> {
     );
   }
 
+  void _confirmDelete() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirm Deletion"),
+          content: Text("Are you sure you want to delete the selected messages?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _deleteSelectedMessages();
+              },
+              child: Text("Delete", style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _bottomSheetButton(String text, Color color, VoidCallback onPressed) {
     return Container(
       width: double.infinity,
@@ -66,7 +98,7 @@ class _EditMessagesState extends State<EditMessages> {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
-          foregroundColor: color, // Text color
+          foregroundColor: color,
           padding: EdgeInsets.symmetric(vertical: 12),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
@@ -78,7 +110,9 @@ class _EditMessagesState extends State<EditMessages> {
 
   void _deleteSelectedMessages() {
     setState(() {
-      widget.messages.removeWhere((message) => selectedMessages[widget.messages.indexOf(message)] ?? false);
+      widget.messages.removeWhere(
+            (message) => selectedMessages[widget.messages.indexOf(message)] ?? false,
+      );
       selectedMessages.clear();
     });
   }
@@ -153,17 +187,11 @@ class _EditMessagesState extends State<EditMessages> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _buildTab('Safe Messages', 0, onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SafeMessages()),
-                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SafeMessages()));
                 }),
                 SizedBox(width: 10),
                 _buildTab('Spam Messages', 1, onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SpamMessages()),
-                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SpamMessages()));
                 }),
                 SizedBox(width: 10),
                 _buildTab('All Texts', 2),

@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import '../home_page.dart';
 import 'safe_messages.dart';
+import 'edit_messages.dart';
+
 
 // Data
 import 'messages_data.dart';
@@ -14,13 +16,13 @@ class SpamMessages extends StatefulWidget {
 }
 
 class SpamMessagesState extends State<SpamMessages> {
+  int selectedIndex = 0;
+
   List<Map<String, String>> get displayedMessages {
-    if (selectedIndex == -1) return safeMessages;
     if (selectedIndex == 0) return spamMessages;
+    if (selectedIndex == -1) return safeMessages;
     return [...safeMessages, ...spamMessages];
   }
-
-  int selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +58,7 @@ class SpamMessagesState extends State<SpamMessages> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => HomeScreen()), //
+                        MaterialPageRoute(builder: (context) => HomeScreen()),
                       );
                     },
                   ),
@@ -80,7 +82,15 @@ class SpamMessagesState extends State<SpamMessages> {
                   child: IconButton(
                     icon: Icon(Icons.edit, color: Colors.white),
                     onPressed: () {
-                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditMessages(
+                            messages: displayedMessages,
+                            selectedIndex: selectedIndex == 0 ? 1 : selectedIndex,
+                          ),
+                        ),
+                      );
                     },
                   ),
                 ),
