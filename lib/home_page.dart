@@ -12,7 +12,6 @@ import 'notification.dart';
 import 'messages/safe_messages.dart';
 import 'messages/spam_messages.dart';
 
-
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -34,41 +33,49 @@ class HomeScreen extends StatelessWidget {
                 fit: BoxFit.contain,
               ),
             ),
-
             Positioned(
-              top: -75,
+              top: 95,
               left: 25,
               child: Image.asset(
                 'images/keepinboxclean.png',
                 width: MediaQuery.of(context).size.width * 0.45,
-                height: MediaQuery.of(context).size.height * 0.45,
+                height: MediaQuery.of(context).size.height * 0.05,
                 fit: BoxFit.contain,
               ),
             ),
-
             Positioned(
-              top: -75,
+              top: 140,
               left: 20,
-              child: Image.asset(
-                'images/search.png',
-                width: MediaQuery.of(context).size.width * 0.55,
-                height: MediaQuery.of(context).size.height * 0.55,
-                fit: BoxFit.contain,
+              child: ClipRect(
+                child: GestureDetector(
+                  onTap: () {
+                    // Add your onTap functionality here
+                  },
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.53,
+                      height: MediaQuery.of(context).size.height * 0.06, // Adjust aspect ratio here
+                      child: Image.asset(
+                        'images/search.png',
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
             Positioned(
-              bottom: -380,
-              left: 0,
+              bottom: 0,
               child: Image.asset(
                 'images/minibar.png',
                 width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height,
+                height: MediaQuery.of(context).size.height * 0.1,
                 fit: BoxFit.contain,
               ),
             ),
-
             Positioned(
-              top: -110,
+              top: 240,
               left: 40,
               right: 40,
               child: ClipRRect(
@@ -76,16 +83,13 @@ class HomeScreen extends StatelessWidget {
                 child: Image.asset(
                   'images/allmessages.png',
                   width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
+                  height: MediaQuery.of(context).size.height * 0.19x`,
                   fit: BoxFit.contain,
                 ),
               ),
-
             ),
-
-
             Positioned(
-              top: -70,
+              top: 390,
               left: 45,
               right: 45,
               child: Row(
@@ -107,7 +111,6 @@ class HomeScreen extends StatelessWidget {
                         fit: BoxFit.contain,
                       ),
                     ),
-
                   ),
                   GestureDetector(
                     onTap: () {
@@ -121,21 +124,19 @@ class HomeScreen extends StatelessWidget {
                       child: Image.asset(
                         'images/spammessages.png',
                         width: MediaQuery.of(context).size.width * 0.45,
-                        height: MediaQuery.of(context).size.height * 1.3,
+                        height: MediaQuery.of(context).size.height * 0.25,
                         fit: BoxFit.contain,
                       ),
                     ),
-
                   ),
                 ],
               ),
             ),
 
-
             Positioned(
-              top: 360,
-              left: 40,
-              right: 40,
+              top: 600, // Adjusted position to avoid overlap
+              left: 40, // Adjusted alignment
+              right: 40, // Adjusted alignment
               child: GestureDetector(
                 onTap: () {
                   // Handle tap
@@ -144,16 +145,13 @@ class HomeScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                   child: Image.asset(
                     'images/recentlydeleted.png',
-                    width: MediaQuery.of(context).size.width * 0.7,
-                    height: MediaQuery.of(context).size.height * 0.7,
+                    width: MediaQuery.of(context).size.width, // Adjusted size
+                    height: MediaQuery.of(context).size.height * 0.19, // Adjusted size
                     fit: BoxFit.contain,
                   ),
                 ),
-
               ),
             ),
-
-
             Positioned(
               bottom: 8,
               left: 320,
@@ -163,11 +161,9 @@ class HomeScreen extends StatelessWidget {
                   color: Colors.white,
                   size: 35.0,
                 ),
-                onPressed: () {
-                },
+                onPressed: () {},
               ),
             ),
-
             // Whitelist Contacts button
             Positioned(
               bottom: 8,
@@ -188,7 +184,6 @@ class HomeScreen extends StatelessWidget {
                 },
               ),
             ),
-
             // Blacklist Contacts button
             Positioned(
               bottom: 8,
@@ -209,7 +204,6 @@ class HomeScreen extends StatelessWidget {
                 },
               ),
             ),
-
             // Notifications Button
             Positioned(
               bottom: 8,
@@ -230,7 +224,6 @@ class HomeScreen extends StatelessWidget {
                 },
               ),
             ),
-
             // Sign out button
             Positioned(
               bottom: 8,
