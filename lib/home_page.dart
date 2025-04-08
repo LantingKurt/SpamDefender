@@ -83,7 +83,7 @@ class HomeScreen extends StatelessWidget {
                 child: Image.asset(
                   'images/allmessages.png',
                   width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height * 0.19x`,
+                  height: MediaQuery.of(context).size.height * 0.19,
                   fit: BoxFit.contain,
                 ),
               ),
