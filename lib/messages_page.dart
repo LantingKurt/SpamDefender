@@ -39,39 +39,112 @@ class MessagesPageState extends State<MessagesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('SMS Inbox'),
-        backgroundColor: Colors.orange,
-      ),
-      body: groupedMessages.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: groupedMessages.keys.length,
-              itemBuilder: (context, index) {
-                final sender = groupedMessages.keys.elementAt(index);
-                final messages = groupedMessages[sender]!;
-                return ListTile(
-                  leading: const Icon(Icons.person, size: 40.0, color: Colors.grey),
-                  title: Text(
-                    sender,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    messages.first.body ?? "",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => MessageDetailPage(sender: sender, messages: messages),
-                      ),
-                    );
-                  },
-                );
-              },
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          // Top minibar
+          Positioned(
+            top: 0,
+            left: 0,
+            child: Image.asset(
+              'images/minibartop.png',
+              width: MediaQuery.of(context).size.width,
+              height: 120,
+              fit: BoxFit.cover,
             ),
+          ),
+
+          Positioned.fill(
+            top: 0,
+            child: Column(
+              children: [
+                const SizedBox(height: 40), // Spacing for minibar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: const Icon(Icons.arrow_back, color: Colors.white),
+                      ),
+                      const Text(
+                        'SMS Inbox',
+                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const Icon(Icons.menu, color: Colors.white),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Message list
+                Expanded(
+                  child: groupedMessages.isEmpty
+                      ? const Center(child: CircularProgressIndicator())
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: groupedMessages.keys.length,
+                          itemBuilder: (context, index) {
+                            final sender = groupedMessages.keys.elementAt(index);
+                            final messages = groupedMessages[sender]!;
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => MessageDetailPage(sender: sender, messages: messages),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF070056),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: Colors.white,
+                                      child: Icon(Icons.person, color: Color(0xFF1F0D68)),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            sender,
+                                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            messages.first.body ?? '',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(color: Colors.white70),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+
+
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

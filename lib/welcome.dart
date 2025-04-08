@@ -89,26 +89,6 @@ class WelcomeScreen extends StatelessWidget {
             ),
           ),
           Positioned(
-            top: 470,
-            left: 150,
-            child: OutlinedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  // test contact screen
-                  MaterialPageRoute(builder: (context) => ContactsPage()),
-                );
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Color(0xFF050a30),
-                side: BorderSide(color: Color(0xFF050a30), width: 2),
-                minimumSize: Size(200, 40),
-              ),
-              child: Text('Contacts Page Test'),
-            ),
-          ),
-          Positioned(
             top: 520,
             left: 150,
             child: OutlinedButton(

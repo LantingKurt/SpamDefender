@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 // UI Screens
+import 'contacts_page.dart';
 import 'welcome.dart';
 import 'contacts_native/whitelist_contacts.dart';
 import 'contacts_native/blacklist_contacts.dart';
@@ -202,7 +203,7 @@ class HomeScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const WhitelistScreen(),
+                      builder: (context) => const ContactsPage(),
                     ),
                   );
                 },

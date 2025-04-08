@@ -1,6 +1,6 @@
 // Flutter Dependencies
 import 'package:flutter/material.dart';
-
+import 'messages/messages_data.dart';
 // UI Screens
 import 'welcome.dart';
 
@@ -14,17 +14,22 @@ class Splash extends StatefulWidget {
 
 class _SplashState extends State<Splash> {
   @override
-  void initState() {
-    super.initState();
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => WelcomeScreen()),
-        );
-      }
-    });
-  }
+void initState() {
+  super.initState();
+
+  final repository = MessagesRepository();
+  repository.uploadInitialMessages(); 
+
+  Future.delayed(const Duration(seconds: 2), () {
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => WelcomeScreen()),
+      );
+    }
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {
