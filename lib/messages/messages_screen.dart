@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 // UI Screens
 import '../home_page.dart';
 import 'messages_data.dart';
-import 'message_page.dart';
+import 'individ_message.dart';
 
 class MessagesScreen extends StatefulWidget {
   final int initialTab;
@@ -369,14 +369,14 @@ class MessagesScreenState extends State<MessagesScreen> {
                   ),
                   trailing: isEditing
                       ? Checkbox(
-                          value: selectedMessages[index] ?? false,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              selectedMessages[index] = value ?? false;
-                            });
-                            print("Message at index $index selected: ${selectedMessages[index]}");
-                          },
-                        )
+                    value: selectedMessages[index] ?? false,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        selectedMessages[index] = value ?? false;
+                      });
+                      print("Message at index $index selected: ${selectedMessages[index]}");
+                    },
+                  )
                       : null,
                   onTap: () {
                     if (isEditing) {
@@ -385,12 +385,12 @@ class MessagesScreenState extends State<MessagesScreen> {
                       });
                       print("Message at index $index toggled: ${selectedMessages[index]}");
                     } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => MessagePage(message: message),
-                      ),
-                    );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MessagePage(message: message),
+                        ),
+                      );
                     }
                   },
                 );

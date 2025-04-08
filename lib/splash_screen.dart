@@ -17,8 +17,8 @@ class _SplashState extends State<Splash> {
 void initState() {
   super.initState();
 
-  final repository = MessagesRepository();
-  repository.uploadInitialMessages(); 
+  // final repository = MessagesRepository();
+  // repository.uploadInitialMessages();
 
   Future.delayed(const Duration(seconds: 2), () {
     if (mounted) {
