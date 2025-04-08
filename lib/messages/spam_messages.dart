@@ -1,12 +1,8 @@
-// Flutter Dependencies
 import 'package:flutter/material.dart';
 import '../home_page.dart';
 import 'message_page.dart';
-import 'edit_messages.dart';
-
-
-// Data
 import 'messages_data.dart';
+import 'edit_messages.dart';
 
 class SpamMessages extends StatefulWidget {
   const SpamMessages({super.key});
@@ -16,7 +12,25 @@ class SpamMessages extends StatefulWidget {
 }
 
 class SpamMessagesState extends State<SpamMessages> {
+  final MessagesRepository _repository = MessagesRepository();
+  List<Map<String, String>> spamMessages = [];
+  List<Map<String, String>> safeMessages = [];
   int selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMessages();
+  }
+
+  Future<void> _loadMessages() async {
+    final spam = await _repository.fetchSpamMessages();
+    final safe = await _repository.fetchSafeMessages();
+    setState(() {
+      spamMessages = spam;
+      safeMessages = safe;
+    });
+  }
 
   List<Map<String, String>> get displayedMessages {
     if (selectedIndex == 0) return spamMessages;
@@ -46,24 +60,13 @@ class SpamMessagesState extends State<SpamMessages> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withOpacity(0.7),
-                  ),
-                  child: IconButton(
-                    icon: Icon(Icons.home, color: Colors.white),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => HomeScreen()),
-                      );
-                    },
-                  ),
-                ),
-                Text(
+                _buildIconCircle(Icons.home, () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                  );
+                }),
+                const Text(
                   'Messages',
                   style: TextStyle(
                     color: Colors.white,
@@ -72,28 +75,17 @@ class SpamMessagesState extends State<SpamMessages> {
                     fontFamily: 'Mosafin',
                   ),
                 ),
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withOpacity(0.7),
-                  ),
-                  child: IconButton(
-                    icon: Icon(Icons.edit, color: Colors.white),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EditMessages(
-                            messages: displayedMessages,
-                            selectedIndex: selectedIndex == 0 ? 1 : selectedIndex,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+                _buildIconCircle(Icons.edit, () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditMessages(
+                        messages: displayedMessages,
+                        selectedIndex: selectedIndex == 0 ? 1 : selectedIndex,
+                      ),
+                    ),
+                  );
+                }),
               ],
             ),
           ),
@@ -105,30 +97,30 @@ class SpamMessagesState extends State<SpamMessages> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _buildTab('Safe Messages', -1),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 _buildTab('Spam Messages', 0),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 _buildTab('All Texts', 1),
               ],
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(top: 140),
+            padding: const EdgeInsets.only(top: 140),
             child: ListView.builder(
               itemCount: displayedMessages.length,
               itemBuilder: (context, index) {
                 final message = displayedMessages[index];
                 return ListTile(
-                  leading: Icon(Icons.person, size: 40.0, color: Colors.grey),
+                  leading: const Icon(Icons.person, size: 40.0, color: Colors.grey),
                   title: Text(
                     message['sender']!,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Mosafin'),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Mosafin'),
                   ),
                   subtitle: Text(
                     message['message']!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontFamily: 'Mosafin'),
+                    style: const TextStyle(fontFamily: 'Mosafin'),
                   ),
                   onTap: () {
                     Navigator.push(
@@ -169,24 +161,24 @@ class SpamMessagesState extends State<SpamMessages> {
               height: 2,
               width: 80,
               color: Colors.orange,
-              margin: EdgeInsets.only(top: 2),
+              margin: const EdgeInsets.only(top: 2),
             ),
         ],
       ),
     );
   }
 
-  Widget _buildIconCircle(IconData icon) {
+  Widget _buildIconCircle(IconData icon, VoidCallback onPressed) {
     return Container(
       width: 40,
       height: 40,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.black.withOpacity(0.4),
+        color: Colors.black.withOpacity(0.7),
       ),
       child: IconButton(
         icon: Icon(icon, color: Colors.white),
-        onPressed: () {},
+        onPressed: onPressed,
       ),
     );
   }

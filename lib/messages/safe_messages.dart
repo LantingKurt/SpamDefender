@@ -14,13 +14,31 @@ class SafeMessages extends StatefulWidget {
 }
 
 class SafeMessagesState extends State<SafeMessages> {
+  final MessagesRepository _repository = MessagesRepository();
+  List<Map<String, String>> spamMessages = [];
+  List<Map<String, String>> safeMessages = [];
+  int selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMessages();
+  }
+
+  Future<void> _loadMessages() async {
+    final spam = await _repository.fetchSpamMessages();
+    final safe = await _repository.fetchSafeMessages();
+    setState(() {
+      spamMessages = spam;
+      safeMessages = safe;
+    });
+  }
+
   List<Map<String, String>> get displayedMessages {
     if (selectedIndex == 0) return safeMessages;
     if (selectedIndex == 1) return spamMessages;
     return [...safeMessages, ...spamMessages];
   }
-
-  int selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
