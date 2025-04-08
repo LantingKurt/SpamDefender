@@ -176,7 +176,7 @@ class WhitelistScreenState extends State<WhitelistScreen> {
             ),
           ),
           Positioned(
-            top: 140.0,
+            top: 190.0,
             left: 10,
             right: 30.0,
             child: TextField(

@@ -19,99 +19,123 @@ class _ContactsPageState extends State<ContactsPage> {
 
   // Delete a contact from the phone and update the local list
   Future<void> _deleteContact(Contact contact) async {
-    try {
-      await FlutterContacts.deleteContact(contact);
-      setState(() {
-        contacts.remove(contact);
-      });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Contact deleted successfully')));
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to delete contact: $e')));
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Confirm Deletion'),
+        content: Text('Are you sure you want to delete this contact?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete == true) {
+      try {
+        await FlutterContacts.deleteContact(contact);
+        if (mounted) {
+          setState(() {
+            contacts.remove(contact);
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Contact deleted successfully')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to delete contact: $e')),
+          );
+        }
+      }
     }
   }
 
   // Add a new contact to the phone and update the local list
   Future<void> _addContact(String name, String phone) async {
-  if (await FlutterContacts.requestPermission()) {
-    final newContact = Contact(
-      displayName: name,
-      name: Name(first: name),
-      phones: [Phone(phone)],
-    );
+    if (await FlutterContacts.requestPermission()) {
+      final newContact = Contact(
+        displayName: name,
+        name: Name(first: name),
+        phones: [Phone(phone)],
+      );
+
+      try {
+        await FlutterContacts.insertContact(newContact);
+        await _fetchContacts();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Contact added successfully')));
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to add contact: $e')));
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Permission denied')));
+    }
+  }
+
+  // Edit an existing contact on the phone and update the local list
+  Future<void> _editContact(
+    Contact contact,
+    String newPrefix,
+    String newFirstName,
+    String newMiddleName,
+    String newLastName,
+    String newSuffix,
+    String newPhone,
+  ) async {
+    final fullContact = await FlutterContacts.getContact(contact.id, withProperties: true, withAccounts: true);
+
+    if (fullContact == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to fetch full contact details')));
+      return;
+    }
+
+    // Update the name fields
+    fullContact.name.prefix = newPrefix.isNotEmpty ? newPrefix : fullContact.name.prefix;
+    fullContact.name.first = newFirstName.isNotEmpty ? newFirstName : fullContact.name.first;
+    fullContact.name.middle = newMiddleName.isNotEmpty ? newMiddleName : fullContact.name.middle;
+    fullContact.name.last = newLastName.isNotEmpty ? newLastName : fullContact.name.last;
+    fullContact.name.suffix = newSuffix.isNotEmpty ? newSuffix : fullContact.name.suffix;
+
+    // Ensure displayName is updated
+    fullContact.displayName = [
+      fullContact.name.prefix,
+      fullContact.name.first,
+      fullContact.name.middle,
+      fullContact.name.last,
+      fullContact.name.suffix
+    ].where((namePart) => namePart.isNotEmpty).join(' ');
+
+    // Update the phone number
+    if (newPhone.isNotEmpty) {
+      if (fullContact.phones.isNotEmpty) {
+        fullContact.phones[0] = Phone(newPhone);
+      } else {
+        fullContact.phones.add(Phone(newPhone));
+      }
+    }
 
     try {
-      await FlutterContacts.insertContact(newContact);
-      await _fetchContacts();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Contact added successfully')));
+      await fullContact.update();
+
+      setState(() {
+        final index = contacts.indexWhere((c) => c.id == contact.id);
+        if (index != -1) {
+          contacts[index] = fullContact;
+        }
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Contact updated successfully')));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to add contact: $e')));
-    }
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Permission denied')));
-  }
-}
-
-// Edit an existing contact on the phone and update the local list
-Future<void> _editContact(
-  Contact contact,
-  String newPrefix,
-  String newFirstName,
-  String newMiddleName,
-  String newLastName,
-  String newSuffix,
-  String newPhone,
-) async {
-  final fullContact = await FlutterContacts.getContact(contact.id, withProperties: true, withAccounts: true);
-
-  if (fullContact == null) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to fetch full contact details')));
-    return;
-  }
-
-  // Update the name fields
-  fullContact.name.prefix = newPrefix.isNotEmpty ? newPrefix : fullContact.name.prefix;
-  fullContact.name.first = newFirstName.isNotEmpty ? newFirstName : fullContact.name.first;
-  fullContact.name.middle = newMiddleName.isNotEmpty ? newMiddleName : fullContact.name.middle;
-  fullContact.name.last = newLastName.isNotEmpty ? newLastName : fullContact.name.last;
-  fullContact.name.suffix = newSuffix.isNotEmpty ? newSuffix : fullContact.name.suffix;
-
-  // Ensure displayName is updated
-  fullContact.displayName = [
-    fullContact.name.prefix,
-    fullContact.name.first,
-    fullContact.name.middle,
-    fullContact.name.last,
-    fullContact.name.suffix
-  ].where((namePart) => namePart.isNotEmpty).join(' ');
-
-  // Update the phone number
-  if (newPhone.isNotEmpty) {
-    if (fullContact.phones.isNotEmpty) {
-      fullContact.phones[0] = Phone(newPhone);
-    } else {
-      fullContact.phones.add(Phone(newPhone));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update contact: $e')));
     }
   }
-
-  try {
-    await fullContact.update();
-
-    setState(() {
-      final index = contacts.indexWhere((c) => c.id == contact.id);
-      if (index != -1) {
-        contacts[index] = fullContact;
-      }
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Contact updated successfully')));
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update contact: $e')));
-  }
-}
 
   @override
   void initState() {
@@ -119,36 +143,35 @@ Future<void> _editContact(
     _fetchContacts();
   }
 
-Future<void> _fetchContacts() async {
-  setState(() => isLoading = true);
-  if (await FlutterContacts.requestPermission()) {
-    try {
-      final fetchedContacts = await FlutterContacts.getContacts(
-        withProperties: true,
-        withAccounts: true, // Ensure rawId is fetched
-      );
+  Future<void> _fetchContacts() async {
+    setState(() => isLoading = true);
+    if (await FlutterContacts.requestPermission()) {
+      try {
+        final fetchedContacts = await FlutterContacts.getContacts(
+          withProperties: true,
+          withAccounts: true, // Ensure rawId is fetched
+        );
 
-      // Fetch full details
-      final detailedContacts = await Future.wait(
-        fetchedContacts.map((contact) async {
-          return await FlutterContacts.getContact(contact.id, withProperties: true, withAccounts: true);
-        }),
-      );
+        // Fetch full details
+        final detailedContacts = await Future.wait(
+          fetchedContacts.map((contact) async {
+            return await FlutterContacts.getContact(contact.id, withProperties: true, withAccounts: true);
+          }),
+        );
 
-      setState(() {
-        contacts = detailedContacts.whereType<Contact>().toList();
-        isLoading = false;
-      });
-    } catch (e) {
+        setState(() {
+          contacts = detailedContacts.whereType<Contact>().toList();
+          isLoading = false;
+        });
+      } catch (e) {
+        setState(() => isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    } else {
       setState(() => isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Permission denied')));
     }
-  } else {
-    setState(() => isLoading = false);
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Permission denied')));
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -214,7 +237,7 @@ Future<void> _fetchContacts() async {
             ),
           ),
           Positioned(
-            top: 80.0,
+            top: 90.0,
             left: 25.0,
             child: Text(
               'Whitelisted',
@@ -227,7 +250,7 @@ Future<void> _fetchContacts() async {
             ),
           ),
           Positioned(
-            top: 75.0,
+            top: 85.0,
             right: 25.0,
             child: IconButton(
               icon: Icon(Icons.add, color: Colors.white, size: 30),
@@ -236,7 +259,7 @@ Future<void> _fetchContacts() async {
             ),
           ),
           Positioned(
-            top: 140.0,
+            top: 170.0,
             left: 10,
             right: 30.0,
             child: TextField(
@@ -332,26 +355,55 @@ Future<void> _fetchContacts() async {
                                     onPressed: () {
                                       showModalBottomSheet(
                                         context: context,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.vertical(top: Radius.circular(15.0)),
+                                        ),
+                                        backgroundColor: Color(0xFF050a30),
                                         builder: (context) {
-                                          return ListView(
-                                            children: <Widget>[
-                                              ListTile(
-                                                title: Text('Edit'),
-                                                onTap: () {
-                                                  Navigator.pop(context);
-                                                  _showEditContactDialog(
-                                                    contact,
-                                                  );
-                                                },
-                                              ),
-                                              ListTile(
-                                                title: Text('Delete'),
-                                                onTap: () {
-                                                  Navigator.pop(context);
-                                                  _deleteContact(contact);
-                                                },
-                                              ),
-                                            ],
+                                          return Container(
+                                            padding: EdgeInsets.all(10),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                SizedBox(
+                                                  width: double.infinity,
+                                                  child: ElevatedButton(
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: Colors.white,
+                                                      foregroundColor: Color(0xFF050a30),
+                                                      padding: EdgeInsets.symmetric(vertical: 15),
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.circular(10),
+                                                      ),
+                                                    ),
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                      _showEditContactDialog(contact);
+                                                    },
+                                                    child: Text('Edit', style: TextStyle(fontSize: 16)),
+                                                  ),
+                                                ),
+                                                SizedBox(height: 10),
+                                                SizedBox(
+                                                  width: double.infinity,
+                                                  child: ElevatedButton(
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: Colors.white,
+                                                      foregroundColor: Colors.red,
+                                                      padding: EdgeInsets.symmetric(vertical: 15),
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.circular(10),
+                                                      ),
+                                                    ),
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                      _deleteContact(contact);
+                                                    },
+                                                    child: Text('Delete', style: TextStyle(fontSize: 16)),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           );
                                         },
                                       );
