@@ -1,6 +1,8 @@
 import 'package:another_telephony/telephony.dart';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 class MessagesPage extends StatefulWidget {
   const MessagesPage({super.key});
@@ -15,12 +17,39 @@ class MessagesPageState extends State<MessagesPage> {
   late int selectedIndex;
   Map<int, bool> selectedMessages = {};
   bool isEditing = false;
+  List<Map<String, String>> _spamMessagesFromFile = [];
 
   @override
   void initState() {
     super.initState();
     selectedIndex = 2; // Default to "All Texts" tab
     _fetchMessages();
+    _loadSpamMessages();
+  }
+
+  Future<void> _loadSpamMessages() async {
+    final spamMessages = await _loadSpamMessagesFromFile();
+    setState(() {
+      _spamMessagesFromFile = spamMessages;
+    });
+  }
+
+  Future<List<Map<String, String>>> _loadSpamMessagesFromFile() async {
+    try {
+      final file = await _getSpamMessagesFile();
+      if (await file.exists()) {
+        final String jsonString = await file.readAsString();
+        final List<dynamic> spamMessages = json.decode(jsonString);
+
+        // Safely cast each item to Map<String, String>
+        return spamMessages.map((item) {
+          return Map<String, String>.from(item as Map);
+        }).toList();
+      }
+    } catch (e) {
+      debugPrint("Error loading spam messages from file: $e");
+    }
+    return [];
   }
 
   List<Map<String, String>> get displayedMessages {
@@ -36,15 +65,19 @@ class MessagesPageState extends State<MessagesPage> {
           .toList();
     }
     if (selectedIndex == 1) {
-      return groupedMessages.entries
-          .where((entry) => entry.key == "Spam")
-          .map(
-            (entry) => {
-              "sender": entry.key,
-              "message": entry.value.first.body ?? "",
-            },
-          )
-          .toList();
+      // Include messages from spam_messages.json
+      return [
+        ...groupedMessages.entries
+            .where((entry) => entry.key == "Spam")
+            .map(
+              (entry) => {
+                "sender": entry.key,
+                "message": entry.value.first.body ?? "",
+              },
+            )
+            .toList(),
+        ..._spamMessagesFromFile,
+      ];
     }
     return groupedMessages.entries
         .map(
@@ -80,6 +113,51 @@ class MessagesPageState extends State<MessagesPage> {
     });
   }
 
+  Future<File> _getSpamMessagesFile() async {
+    final directory = await getApplicationDocumentsDirectory();
+    return File('${directory.path}/spam_messages.json');
+  }
+
+  void _markAsSpam() async {
+    final selectedIndexes = selectedMessages.entries
+        .where((entry) => entry.value)
+        .map((entry) => entry.key)
+        .toList();
+
+    final List<Map<String, String>> spamMessagesToAdd = [];
+    for (var index in selectedIndexes) {
+      spamMessagesToAdd.add(displayedMessages[index]);
+    }
+
+    setState(() {
+      for (var index in selectedIndexes.reversed) {
+        displayedMessages.removeAt(index);
+      }
+      selectedMessages.clear();
+      isEditing = false;
+    });
+
+    try {
+      final file = await _getSpamMessagesFile();
+      debugPrint("Spam messages file path: ${file.path}"); // Debug statement
+      List<dynamic> existingSpamMessages = [];
+      if (await file.exists()) {
+        final String jsonString = await file.readAsString();
+        existingSpamMessages = json.decode(jsonString);
+      }
+      existingSpamMessages.addAll(spamMessagesToAdd);
+
+      await file.writeAsString(json.encode(existingSpamMessages));
+      debugPrint("Messages successfully added to spam_messages.json");
+
+      // Debug: Print the updated content of the JSON file
+      final String updatedContent = await file.readAsString();
+      debugPrint("Updated spam_messages.json content: $updatedContent");
+    } catch (e) {
+      debugPrint("Error updating spam messages JSON: $e");
+    }
+  }
+
   void _showActionBottomSheet() {
     showModalBottomSheet(
       context: context,
@@ -106,6 +184,10 @@ class MessagesPageState extends State<MessagesPage> {
                 ),
               ),
               const SizedBox(height: 10),
+              _bottomSheetButton("Mark as Spam", Colors.orange, () {
+                _markAsSpam();
+                Navigator.pop(context);
+              }),
               _bottomSheetButton("Delete", Colors.red, () {
                 // Add delete functionality here
                 Navigator.pop(context);
@@ -278,7 +360,10 @@ class MessagesPageState extends State<MessagesPage> {
                   ),
                   title: Text(
                     message['sender']!,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Mosafin'),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Mosafin',
+                    ),
                   ),
                   subtitle: Text(
                     message['message']!,
@@ -363,26 +448,109 @@ class MessageDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(sender), backgroundColor: Colors.orange),
-      body: ListView.builder(
-        itemCount: messages.length,
-        itemBuilder: (context, index) {
-          final message = messages[index];
-          return ListTile(
-            title: Text(message.body ?? ""),
-            subtitle: Text(
-              message.dateSent != null
-                  ? DateTime.fromMillisecondsSinceEpoch(
-                    message.dateSent!,
-                  ).toString()
-                  : (message.date != null
-                      ? DateTime.fromMillisecondsSinceEpoch(
-                        message.date!,
-                      ).toString()
-                      : "Unknown date"),
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            child: Image.asset(
+              'images/minibartop.png',
+              width: MediaQuery.of(context).size.width,
+              height: 120,
+              fit: BoxFit.cover,
             ),
-          );
-        },
+          ),
+          Positioned.fill(
+            top: 0,
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Column(
+                        children: [
+                          const CircleAvatar(
+                            radius: 18,
+                            backgroundColor: Colors.white,
+                            child: Icon(Icons.person, color: Color(0xFF1F0D68)),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            sender,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      ),
+                      const Icon(Icons.menu, color: Colors.white),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final message = messages[index];
+                      return Column(
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Flexible(
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF070056),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    message.body ?? '',
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                message.dateSent != null
+                                    ? DateTime.fromMillisecondsSinceEpoch(
+                                      message.dateSent!,
+                                    ).toString()
+                                    : (message.date != null
+                                        ? DateTime.fromMillisecondsSinceEpoch(
+                                          message.date!,
+                                        ).toString()
+                                        : "Unknown date"),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 12,
+                          ), // Add spacing between messages
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

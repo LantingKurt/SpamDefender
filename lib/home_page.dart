@@ -102,7 +102,6 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
 
-
             // Save Messages Icon
             Positioned(
               top: 390,
@@ -181,6 +180,8 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
+
+
             Positioned(
               bottom: 8,
               left: 320,
