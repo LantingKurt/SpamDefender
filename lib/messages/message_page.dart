@@ -89,34 +89,35 @@ class MessagePage extends StatelessWidget {
                   ),
                 ),
 
-                // Bottom input bar
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
-                  color: const Color(0xFF070056),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.camera_alt, color: Colors.white),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 15),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          child: const TextField(
-                            decoration: InputDecoration(
-                              hintText: 'New Message',
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      const Icon(Icons.send, color: Colors.white),
-                    ],
-                  ),
-                ),
+                // // Bottom input bar
+                // Leaved out for now since we dont have send sms feature yet
+                // Container(
+                //   padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+                //   color: const Color(0xFF070056),
+                //   child: Row(
+                //     children: [
+                //       const Icon(Icons.camera_alt, color: Colors.white),
+                //       const SizedBox(width: 10),
+                //       Expanded(
+                //         child: Container(
+                //           padding: const EdgeInsets.symmetric(horizontal: 15),
+                //           decoration: BoxDecoration(
+                //             color: Colors.white,
+                //             borderRadius: BorderRadius.circular(24),
+                //           ),
+                //           child: const TextField(
+                //             decoration: InputDecoration(
+                //               hintText: 'New Message',
+                //               border: InputBorder.none,
+                //             ),
+                //           ),
+                //         ),
+                //       ),
+                //       const SizedBox(width: 10),
+                //       const Icon(Icons.send, color: Colors.white),
+                //     ],
+                //   ),
+                // ),
               ],
             ),
           ),

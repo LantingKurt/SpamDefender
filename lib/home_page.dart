@@ -9,8 +9,7 @@ import 'welcome.dart';
 import 'contacts_native/whitelist_contacts.dart';
 import 'contacts_native/blacklist_contacts.dart';
 import 'notification.dart';
-import 'messages/safe_messages.dart';
-import 'messages/spam_messages.dart';
+import 'messages/messages_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -55,7 +54,9 @@ class HomeScreen extends StatelessWidget {
                     alignment: Alignment.center,
                     child: SizedBox(
                       width: MediaQuery.of(context).size.width * 0.53,
-                      height: MediaQuery.of(context).size.height * 0.06, // Adjust aspect ratio here
+                      height:
+                          MediaQuery.of(context).size.height *
+                          0.06, // Adjust aspect ratio here
                       child: Image.asset(
                         'images/search.png',
                         fit: BoxFit.contain,
@@ -74,12 +75,23 @@ class HomeScreen extends StatelessWidget {
                 fit: BoxFit.contain,
               ),
             ),
+
+            // All Messages Icon
             Positioned(
               top: 240,
               left: 40,
               right: 40,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MessagesScreen(
+                        initialTab: 2, // Corrected to navigate to "All Texts" tab
+                      ),
+                    ),
+                  );
+                },
                 child: Image.asset(
                   'images/allmessages.png',
                   width: MediaQuery.of(context).size.width,
@@ -88,6 +100,9 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
+
+
+            // Save Messages Icon
             Positioned(
               top: 390,
               left: 45,
@@ -99,7 +114,12 @@ class HomeScreen extends StatelessWidget {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => SafeMessages()),
+                        MaterialPageRoute(
+                          builder:
+                              (context) => const MessagesScreen(
+                                initialTab: 0,
+                              ), // Safe Messages tab
+                        ),
                       );
                     },
                     child: ClipRRect(
@@ -116,7 +136,12 @@ class HomeScreen extends StatelessWidget {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => SpamMessages()),
+                        MaterialPageRoute(
+                          builder:
+                              (context) => const MessagesScreen(
+                                initialTab: 1,
+                              ), // Spam Messages tab
+                        ),
                       );
                     },
                     child: ClipRRect(
@@ -133,6 +158,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
 
+            // Recently Deleted Button
             Positioned(
               top: 600, // Adjusted position to avoid overlap
               left: 40, // Adjusted alignment
@@ -146,7 +172,9 @@ class HomeScreen extends StatelessWidget {
                   child: Image.asset(
                     'images/recentlydeleted.png',
                     width: MediaQuery.of(context).size.width, // Adjusted size
-                    height: MediaQuery.of(context).size.height * 0.19, // Adjusted size
+                    height:
+                        MediaQuery.of(context).size.height *
+                        0.19, // Adjusted size
                     fit: BoxFit.contain,
                   ),
                 ),
@@ -156,11 +184,7 @@ class HomeScreen extends StatelessWidget {
               bottom: 8,
               left: 320,
               child: IconButton(
-                icon: const Icon(
-                  Icons.person,
-                  color: Colors.white,
-                  size: 35.0,
-                ),
+                icon: const Icon(Icons.person, color: Colors.white, size: 35.0),
                 onPressed: () {},
               ),
             ),
@@ -189,11 +213,7 @@ class HomeScreen extends StatelessWidget {
               bottom: 8,
               left: 180,
               child: IconButton(
-                icon: const Icon(
-                  Icons.block,
-                  color: Colors.white,
-                  size: 35.0,
-                ),
+                icon: const Icon(Icons.block, color: Colors.white, size: 35.0),
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -229,11 +249,7 @@ class HomeScreen extends StatelessWidget {
               bottom: 8,
               left: 40,
               child: IconButton(
-                icon: const Icon(
-                  Icons.logout,
-                  color: Colors.white,
-                  size: 35.0,
-                ),
+                icon: const Icon(Icons.logout, color: Colors.white, size: 35.0),
                 onPressed: () {
                   FirebaseAuth.instance.signOut();
                   Navigator.push(
@@ -249,4 +265,3 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
-
