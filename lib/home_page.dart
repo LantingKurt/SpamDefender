@@ -36,7 +36,7 @@ class HomeScreen extends StatelessWidget {
             ),
 
             Positioned(
-              top: -85,
+              top: -75,
               left: 25,
               child: Image.asset(
                 'images/keepinboxclean.png',
@@ -47,7 +47,7 @@ class HomeScreen extends StatelessWidget {
             ),
 
             Positioned(
-              top: -85,
+              top: -75,
               left: 20,
               child: Image.asset(
                 'images/search.png',
@@ -85,7 +85,7 @@ class HomeScreen extends StatelessWidget {
 
 
             Positioned(
-              top: -60,
+              top: -70,
               left: 45,
               right: 45,
               child: Row(
@@ -237,7 +237,7 @@ class HomeScreen extends StatelessWidget {
               left: 40,
               child: IconButton(
                 icon: const Icon(
-                  Icons.home,
+                  Icons.logout,
                   color: Colors.white,
                   size: 35.0,
                 ),
