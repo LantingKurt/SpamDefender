@@ -8,10 +8,8 @@ import 'package:spamdefender/messages_page.dart';
 // UI Screens
 import 'contacts_page.dart';
 import 'welcome.dart';
-import 'contacts_native/whitelist_contacts.dart';
 import 'contacts_native/blacklist_contacts.dart';
 import 'notification.dart';
-import 'messages/messages_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -88,9 +86,9 @@ class HomeScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const MessagesScreen(
-                        initialTab: 2, // Corrected to navigate to "All Texts" tab
-                      ),
+                      builder:
+                          (context) =>
+                              const MessagesPage(), // Navigate to MessagesPage
                     ),
                   );
                 },
@@ -117,7 +115,10 @@ class HomeScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder:
-                              (context) => MessagesPage() // Safe Messages tab
+                              (context) => const MessagesPage(
+                                initialTab:
+                                    0, // Navigate to "Safe Messages" tab
+                              ),
                         ),
                       );
                     },
@@ -137,9 +138,10 @@ class HomeScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder:
-                              (context) => const MessagesScreen(
-                                initialTab: 1,
-                              ), // Spam Messages tab
+                              (context) => const MessagesPage(
+                                initialTab:
+                                    1, // Navigate to "Spam Messages" tab
+                              ),
                         ),
                       );
                     },
@@ -179,7 +181,6 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-
 
             Positioned(
               bottom: 8,

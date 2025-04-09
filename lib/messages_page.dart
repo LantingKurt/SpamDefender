@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 
-
 void clearSpamMessages() async {
   final file = File('spam_messages.json');
   if (await file.exists()) {
@@ -17,7 +16,12 @@ void clearSpamMessages() async {
 }
 
 class MessagesPage extends StatefulWidget {
-  const MessagesPage({super.key});
+  final int initialTab; // Add this parameter
+
+  const MessagesPage({
+    super.key,
+    this.initialTab = 2,
+  }); // Default to "All Texts"
 
   @override
   MessagesPageState createState() => MessagesPageState();
@@ -34,8 +38,8 @@ class MessagesPageState extends State<MessagesPage> {
   @override
   void initState() {
     super.initState();
-    selectedIndex = 2; // Default to "All Texts" tab
-    _fetchMessages();
+    selectedIndex = widget.initialTab; // Use the initialTab parameter
+    fetchMessages();
     _loadSpamMessages();
   }
 
@@ -46,7 +50,7 @@ class MessagesPageState extends State<MessagesPage> {
     });
   }
 
-    Future<File> _getSpamMessagesFile() async {
+  Future<File> _getSpamMessagesFile() async {
     final directory = await getApplicationDocumentsDirectory();
     return File('${directory.path}/spam_messages.json');
   }
@@ -64,9 +68,10 @@ class MessagesPageState extends State<MessagesPage> {
           return {
             "sender": map["sender"]?.toString() ?? "Unknown",
             "number": map["number"]?.toString() ?? "Unknown",
-            "message": (map["message"] is List && (map["message"] as List).isNotEmpty)
-                ? (map["message"] as List<dynamic>).first.toString()
-                : "No message available", // Use only the first message
+            "message":
+                (map["message"] is List && (map["message"] as List).isNotEmpty)
+                    ? (map["message"] as List<dynamic>).first.toString()
+                    : "No message available", // Use only the first message
           };
         }).toList();
       }
@@ -95,15 +100,16 @@ class MessagesPageState extends State<MessagesPage> {
     }
     if (selectedIndex == 1) {
       // Debug: Print the loaded spam messages from the file
-      debugPrint("Spam messages loaded from file: $_spamMessagesFromFile");
+      // debugPrint("Spam messages loaded from file: $_spamMessagesFromFile");
 
       // Show spam messages directly without re-encoding
-      final messages = _spamMessagesFromFile.map((spam) {
-        return {
-          "sender": spam['sender'] ?? "Unknown",
-          "message": spam['message'] ?? "No message available",
-        };
-      }).toList();
+      final messages =
+          _spamMessagesFromFile.map((spam) {
+            return {
+              "sender": spam['sender'] ?? "Unknown",
+              "message": spam['message'] ?? "No message available",
+            };
+          }).toList();
 
       // Debug: Print the messages to be displayed
       // debugPrint("Messages to be displayed in Spam Messages tab: $messages");
@@ -121,7 +127,7 @@ class MessagesPageState extends State<MessagesPage> {
         .toList();
   }
 
-  Future<void> _fetchMessages() async {
+  Future<void> fetchMessages() async {
     final List<SmsMessage> messages = await telephony.getInboxSms();
     final Map<String, List<SmsMessage>> grouped = {};
 
@@ -143,7 +149,9 @@ class MessagesPageState extends State<MessagesPage> {
               withAccounts: true,
             );
           }),
-        ).then((detailedContacts) => detailedContacts.whereType<Contact>().toList());
+        ).then(
+          (detailedContacts) => detailedContacts.whereType<Contact>().toList(),
+        );
 
         // Modify phone numbers to the format +639XXXXXXXXX
         for (var contact in contacts) {
@@ -164,13 +172,14 @@ class MessagesPageState extends State<MessagesPage> {
         //   'name': c.displayName,
         //   'phones': c.phones.map((p) => p.number).toList()
         // }).toList()}");
-
       } catch (e) {
         debugPrint("Error fetching contacts: $e");
       }
     }
     for (var message in messages) {
-      String sender = message.address?.trim() ?? "Unknown"; // Ensure sender is not null or empty
+      String sender =
+          message.address?.trim() ??
+          "Unknown"; // Ensure sender is not null or empty
       // debugPrint("Original sender: $sender");
 
       if (sender != "Unknown") {
@@ -212,7 +221,7 @@ class MessagesPageState extends State<MessagesPage> {
     });
   }
 
-  void _markAsSpam() async {
+  void markAsSpam() async {
     final selectedIndexes =
         selectedMessages.entries
             .where((entry) => entry.value)
@@ -224,7 +233,8 @@ class MessagesPageState extends State<MessagesPage> {
 
     for (var index in selectedIndexes) {
       final message = displayedMessages[index];
-      final senderName = message['sender'] ?? "Unknown"; // Handle missing sender name
+      final senderName =
+          message['sender'] ?? "Unknown"; // Handle missing sender name
 
       if (!processedSenders.contains(senderName)) {
         processedSenders.add(senderName);
@@ -233,23 +243,30 @@ class MessagesPageState extends State<MessagesPage> {
         final senderMessages = groupedMessages[senderName] ?? [];
         spamMessagesToAdd.add({
           "sender": senderName,
-          "number": senderMessages.isNotEmpty
-              ? senderMessages.first.address ?? "Unknown"
-              : "Unknown",
+          "number":
+              senderMessages.isNotEmpty
+                  ? senderMessages.first.address ?? "Unknown"
+                  : "Unknown",
           "message": senderMessages.map((msg) => msg.body ?? "").toList(),
         });
+
+        // Ensure groupedMessages retains the sender's messages
+        if (!groupedMessages.containsKey(senderName)) {
+          groupedMessages[senderName] = senderMessages;
+        }
       }
     }
 
     setState(() {
       // Remove selected messages from the displayed list
-      displayedMessages.removeWhere((msg) => processedSenders.contains(msg['sender']));
+      displayedMessages.removeWhere(
+        (msg) => processedSenders.contains(msg['sender']),
+      );
 
       // Remove selected messages from groupedMessages (Safe Messages tab)
-      groupedMessages.removeWhere((key, value) => processedSenders.contains(key));
-
-      // // Reload groupedMessages to ensure consistency
-      // _fetchMessages();
+      groupedMessages.removeWhere(
+        (key, value) => processedSenders.contains(key),
+      );
 
       selectedMessages.clear();
       isEditing = false;
@@ -267,11 +284,13 @@ class MessagesPageState extends State<MessagesPage> {
       // Merge new spam messages with existing ones
       for (var newSpam in spamMessagesToAdd) {
         final existingIndex = existingSpamMessages.indexWhere(
-            (spam) => spam['sender'] == newSpam['sender']);
+          (spam) => spam['sender'] == newSpam['sender'],
+        );
         if (existingIndex != -1) {
           // Merge messages if sender already exists
-          existingSpamMessages[existingIndex]['message']
-              .addAll(newSpam['message']);
+          existingSpamMessages[existingIndex]['message'].addAll(
+            newSpam['message'],
+          );
         } else {
           existingSpamMessages.add(newSpam);
         }
@@ -286,7 +305,7 @@ class MessagesPageState extends State<MessagesPage> {
 
       // Load the spam messages to reflect changes
       await _loadSpamMessages();
-      await _fetchMessages();
+      await fetchMessages();
     } catch (e) {
       debugPrint("Error updating spam messages JSON: $e");
     }
@@ -321,7 +340,8 @@ class MessagesPageState extends State<MessagesPage> {
           (spam) => messagesToRemove.any(
             (msg) =>
                 msg['sender'] == spam['sender'] &&
-                msg['message'] == (spam['message'] as List<dynamic>).first.toString(),
+                msg['message'] ==
+                    (spam['message'] as List<dynamic>).first.toString(),
           ),
         );
 
@@ -348,7 +368,7 @@ class MessagesPageState extends State<MessagesPage> {
         selectedMessages.clear();
         isEditing = false;
       });
-      await _fetchMessages();
+      await fetchMessages();
     } catch (e) {
       debugPrint("Error marking messages as safe: $e");
     }
@@ -383,7 +403,7 @@ class MessagesPageState extends State<MessagesPage> {
               if (selectedIndex == 0 ||
                   selectedIndex == 2) // Safe Messages or All Texts
                 _bottomSheetButton("Mark as Spam", Colors.orange, () {
-                  _markAsSpam();
+                  markAsSpam();
                   Navigator.pop(context);
                 }),
               if (selectedIndex == 1 ||
@@ -516,12 +536,16 @@ class MessagesPageState extends State<MessagesPage> {
                       onPressed: () async {
                         final file = await _getSpamMessagesFile();
                         if (await file.exists()) {
-                          await file.writeAsString(jsonEncode([])); // Clear file
+                          await file.writeAsString(
+                            jsonEncode([]),
+                          ); // Clear file
                           setState(() {
                             _spamMessagesFromFile.clear();
                           });
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Spam messages cleared!')),
+                            const SnackBar(
+                              content: Text('Spam messages cleared!'),
+                            ),
                           );
                         }
                       },
@@ -531,9 +555,10 @@ class MessagesPageState extends State<MessagesPage> {
                       height: 40,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: isEditing
-                            ? const Color(0xddffad49).withOpacity(0.8)
-                            : Colors.grey.withOpacity(0.5),
+                        color:
+                            isEditing
+                                ? const Color(0xddffad49).withOpacity(0.8)
+                                : Colors.grey.withOpacity(0.5),
                       ),
                       child: IconButton(
                         icon: const Icon(Icons.edit, color: Colors.white),
@@ -616,19 +641,21 @@ class MessagesPageState extends State<MessagesPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => MessageDetailPage(
-                              sender: sender,
-                              messages: messages,
-                            ),
-                          ),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Message details not available.'),
+                            builder:
+                                (context) => MessageDetailPage(
+                                  sender: sender,
+                                  messages: messages,
+                                ),
                           ),
                         );
                       }
+                      // else {
+                      //   ScaffoldMessenger.of(context).showSnackBar(
+                      //     const SnackBar(
+                      //       content: Text('Message details not available.'),
+                      //     ),
+                      //   );
+                      // }
                     }
                   },
                 );

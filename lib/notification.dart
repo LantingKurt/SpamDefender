@@ -4,10 +4,11 @@ import 'package:another_telephony/telephony.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
-import 'dart:io'; // Add this import for file operations
+import 'dart:io'; // import for file operations
 import 'package:path_provider/path_provider.dart'; // Add this for file paths
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'messages_page.dart'; // Import MessagesPage
 
 // Top-level function for background message handling
 Future<void> backgroundMessageHandler(SmsMessage message) async {
@@ -49,11 +50,15 @@ class NotificationScreen extends StatefulWidget {
 class NotificationScreenState extends State<NotificationScreen> {
   bool isNotificationsEnabled = false;
   bool pendingNotificationsEnabled = false; // Temporary state for the switch
-  String displayOption = 'Banners';
+  String displayOption = 'Confirmation Pop-Up';
 
   final Telephony telephony = Telephony.instance;
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+
+  // Add a global key to access MessagesPageState
+  final GlobalKey<MessagesPageState> messagesPageKey =
+      GlobalKey<MessagesPageState>();
 
   @override
   void initState() {
@@ -142,8 +147,143 @@ class NotificationScreenState extends State<NotificationScreen> {
         bool isSpam = await _checkIfSpam(message.body ?? "No content");
 
         if (isSpam) {
-          // Alert user if it's spam
+          // Proceed with spam handling
           _showNotification("Spam Alert", "Message from $senderName is spam!");
+          debugPrint("Spam notification shown for $senderName.");
+
+          if (displayOption == 'Confirmation Pop-Up') {
+            // Show confirmation dialog
+            final shouldProceed = await showDialog<bool>(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text("Spam Detected"),
+                  content: Text(
+                    "Message from $senderName is detected as spam. Do you want to proceed?",
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text("Cancel"),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text("Proceed"),
+                    ),
+                  ],
+                );
+              },
+            );
+
+            if (shouldProceed != true) {
+              debugPrint("User canceled spam handling for $senderName.");
+              return; // Exit if the user cancels
+            }
+          }
+
+          try {
+            // Fetch messages explicitly
+            final List<SmsMessage> messages =
+                await Telephony.instance.getInboxSms();
+            final Map<String, List<SmsMessage>> groupedMessages = {};
+            for (var msg in messages) {
+              String sender = msg.address?.trim() ?? "Unknown";
+              if (!groupedMessages.containsKey(sender)) {
+                groupedMessages[sender] = [];
+              }
+              groupedMessages[sender]!.add(msg);
+            }
+
+            // Get the first message to mark as spam
+            final firstMessage =
+                groupedMessages.entries.isNotEmpty
+                    ? {
+                      "sender": groupedMessages.entries.first.key,
+                      "message":
+                          groupedMessages.entries.first.value.first.body ?? "",
+                    }
+                    : null;
+
+            if (firstMessage != null) {
+              debugPrint("Marking the first message as spam: $firstMessage");
+
+              // Add the message to spam_messages.json
+              final directory = await getApplicationDocumentsDirectory();
+              final spamFile = File('${directory.path}/spam_messages.json');
+              List<dynamic> existingSpamMessages = [];
+              if (await spamFile.exists()) {
+                final String jsonString = await spamFile.readAsString();
+                existingSpamMessages = json.decode(jsonString);
+              }
+
+              // Check if the sender already exists in the spam list
+              final existingIndex = existingSpamMessages.indexWhere(
+                (spam) => spam['sender'] == firstMessage["sender"],
+              );
+
+              if (existingIndex != -1) {
+                // Append the new message to the existing sender's messages
+                existingSpamMessages[existingIndex]['message'].addAll(
+                  groupedMessages[firstMessage["sender"]]!
+                      .map((msg) => msg.body ?? "")
+                      .toList(),
+                );
+              } else {
+                // Add a new entry for the sender
+                final newSpam = {
+                  "sender": firstMessage["sender"],
+                  "number":
+                      groupedMessages[firstMessage["sender"]]!.first.address ??
+                      "Unknown",
+                  "message":
+                      groupedMessages[firstMessage["sender"]]!
+                          .map((msg) => msg.body ?? "")
+                          .toList(),
+                };
+                existingSpamMessages.add(newSpam);
+              }
+
+              await spamFile.writeAsString(json.encode(existingSpamMessages));
+
+              // Add the sender to blacklist.json
+              final blacklistFile = File('${directory.path}/blacklist.json');
+              List<dynamic> blacklist = [];
+              if (await blacklistFile.exists()) {
+                final String jsonString = await blacklistFile.readAsString();
+                blacklist = json.decode(jsonString);
+              }
+
+              final blacklistEntry = {
+                "sender": firstMessage["sender"],
+                "number":
+                    groupedMessages[firstMessage["sender"]]!.first.address ??
+                    "Unknown",
+              };
+
+              // Avoid duplicate entries in the blacklist
+              if (!blacklist.any(
+                (entry) => entry['number'] == blacklistEntry['number'],
+              )) {
+                blacklist.add(blacklistEntry);
+                await blacklistFile.writeAsString(json.encode(blacklist));
+                debugPrint("Sender added to blacklist.json: $blacklistEntry");
+              }
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    "Message Marked as Spam and Added to Blacklist",
+                  ),
+                ),
+              );
+
+              debugPrint("Message successfully added to spam_messages.json");
+            } else {
+              debugPrint("No messages available to mark as spam.");
+            }
+          } catch (e) {
+            debugPrint("Error in spam handling: $e");
+          }
         } else {
           // Show regular notification
           _showNotification(senderName, message.body ?? "No content");
@@ -178,19 +318,74 @@ class NotificationScreenState extends State<NotificationScreen> {
   }
 
   Future<String> _resolveSenderName(String senderNumber) async {
+    debugPrint("Resolving sender name for number: $senderNumber");
+
     if (await FlutterContacts.requestPermission()) {
-      final contacts = await FlutterContacts.getContacts(withProperties: true);
-      for (var contact in contacts) {
-        if (contact.phones.any(
-          (phone) =>
-              phone.number.replaceAll(RegExp(r'\D'), '') ==
-              senderNumber.replaceAll(RegExp(r'\D'), ''),
-        )) {
-          return contact.displayName;
+      try {
+        final fetchedContacts = await FlutterContacts.getContacts(
+          withProperties: true,
+          withAccounts: true,
+        );
+
+        final contacts = await Future.wait(
+          fetchedContacts.map((contact) async {
+            return await FlutterContacts.getContact(
+              contact.id,
+              withProperties: true,
+              withAccounts: true,
+            );
+          }),
+        ).then(
+          (detailedContacts) => detailedContacts.whereType<Contact>().toList(),
+        );
+
+        debugPrint("Fetched ${contacts.length} contacts.");
+
+        // Normalize sender number
+        senderNumber = _normalizePhoneNumber(senderNumber);
+        debugPrint("Normalized sender number: $senderNumber");
+
+        for (var contact in contacts) {
+          for (var phone in contact.phones) {
+            // Normalize contact phone numbers
+            String normalizedPhone = _normalizePhoneNumber(phone.number);
+
+            debugPrint(
+              "Checking contact: ${contact.displayName}, phone: $normalizedPhone",
+            );
+
+            if (normalizedPhone == senderNumber) {
+              debugPrint("Match found: ${contact.displayName}");
+              return contact.displayName;
+            }
+          }
         }
+      } catch (e) {
+        debugPrint("Error resolving sender name: $e");
       }
+    } else {
+      debugPrint("Permission to access contacts was denied.");
     }
+
+    debugPrint("No match found. Returning sender number: $senderNumber");
     return senderNumber; // Return the number if no matching contact is found
+  }
+
+  String _normalizePhoneNumber(String phoneNumber) {
+    // Remove non-numeric characters
+    phoneNumber = phoneNumber.replaceAll(RegExp(r'\D'), '');
+
+    // Convert numbers starting with '09' to '+639'
+    if (phoneNumber.startsWith('09')) {
+      phoneNumber = phoneNumber.replaceFirst('09', '+639');
+    }
+
+    // Ensure numbers starting with '639' are prefixed with '+'
+    if (phoneNumber.startsWith('639')) {
+      phoneNumber = '+$phoneNumber';
+    }
+
+    return phoneNumber;
   }
 
   void _showNotification(String title, String body) async {
@@ -274,9 +469,11 @@ class NotificationScreenState extends State<NotificationScreen> {
   }
 
   void _setDisplayOption(String value) {
+    debugPrint("Changing display option from $displayOption to $value");
     setState(() {
       displayOption = value;
     });
+    debugPrint("Display option updated to: $displayOption");
   }
 
   @override
@@ -386,7 +583,7 @@ class NotificationScreenState extends State<NotificationScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Display as',
+                      'Handle Spam Messages as:',
                       style: TextStyle(
                         fontSize: 18.0,
                         fontWeight: FontWeight.bold,
@@ -400,17 +597,17 @@ class NotificationScreenState extends State<NotificationScreen> {
                         Column(
                           children: [
                             Icon(
-                              Icons.message,
+                              Icons.warning_amber,
                               color: Color(0xffFFAD49),
                               size: 40.0,
                             ),
                             SizedBox(height: 8),
                             Text(
-                              'Banners',
+                              'Confirmation Pop-Up',
                               style: TextStyle(color: Colors.black),
                             ),
                             Radio<String>(
-                              value: 'Banners',
+                              value: 'Confirmation Pop-Up',
                               groupValue: displayOption,
                               onChanged: (value) {
                                 _setDisplayOption(value!);
@@ -422,39 +619,17 @@ class NotificationScreenState extends State<NotificationScreen> {
                         Column(
                           children: [
                             Icon(
-                              Icons.notifications_active,
+                              Icons.verified_user_rounded,
                               color: Color(0xffFFAD49),
                               size: 40.0,
                             ),
                             SizedBox(height: 8),
                             Text(
-                              'Alerts',
+                              'Automatic',
                               style: TextStyle(color: Colors.black),
                             ),
                             Radio<String>(
-                              value: 'Alerts',
-                              groupValue: displayOption,
-                              onChanged: (value) {
-                                _setDisplayOption(value!);
-                              },
-                              activeColor: Color(0xffFFAD49),
-                            ),
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            Icon(
-                              Icons.badge_rounded,
-                              color: Color(0xffFFAD49),
-                              size: 40.0,
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              'Badges',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            Radio<String>(
-                              value: 'Badges',
+                              value: 'Automatic',
                               groupValue: displayOption,
                               onChanged: (value) {
                                 _setDisplayOption(value!);
