@@ -88,26 +88,6 @@ class WelcomeScreen extends StatelessWidget {
               child: Text('SIGN UP'),
             ),
           ),
-          Positioned(
-            top: 520,
-            left: 150,
-            child: OutlinedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  // test contact screen
-                  MaterialPageRoute(builder: (context) => MessagesPage()),
-                );
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Color(0xFF050a30),
-                side: BorderSide(color: Color(0xFF050a30), width: 2),
-                minimumSize: Size(200, 40),
-              ),
-              child: Text('Messages Page Test'),
-            ),
-          ),
         ], // children
       ),
     ),
