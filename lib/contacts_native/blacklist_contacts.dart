@@ -150,7 +150,7 @@ class BlacklistScreenState extends State<BlacklistScreen> {
             ),
           ),
           Positioned(
-            top: 80.0,
+            top: 90.0,
             left: 25.0,
             child: Text(
               'Blacklisted',
@@ -163,7 +163,7 @@ class BlacklistScreenState extends State<BlacklistScreen> {
             ),
           ),
           Positioned(
-            top: 75.0,
+            top: 85.0,
             right: 25.0,
             child: IconButton(
               icon: Icon(Icons.add, color: Colors.white, size: 30),
@@ -180,8 +180,8 @@ class BlacklistScreenState extends State<BlacklistScreen> {
             ),
           ),
           Positioned(
-            top: 140.0,
-            left: 10,
+            top: 170.0,
+            left: 30,
             right: 30.0,
             child: TextField(
               key: Key('Search by name or number'),
@@ -217,38 +217,40 @@ class BlacklistScreenState extends State<BlacklistScreen> {
               ),
             ),
           ),
-          Positioned(
-            top: 200.0,
-            left: 15.0,
-            right: 15.0,
-            child: Card(
-              elevation: 0,
-              child: ListTile(
-                leading: Icon(Icons.person, size: 60.0),
-                title: Text(
-                  'My Name',
-                  style: TextStyle(
-                    fontFamily: 'Mosafin',
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                subtitle: Text(
-                  '000-000-0000',
-                  style: TextStyle(
-                    fontFamily: 'Mosafin',
-                    fontSize: 15.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-            ),
-          ),
+
+          // USER PROFILE TO BE USED IN FUTURE RELEASES
+          // Positioned(
+          //   top: 200.0,
+          //   left: 15.0,
+          //   right: 15.0,
+          //   child: Card(
+          //     elevation: 0,
+          //     child: ListTile(
+          //       leading: Icon(Icons.person, size: 60.0),
+          //       title: Text(
+          //         'My Name',
+          //         style: TextStyle(
+          //           fontFamily: 'Mosafin',
+          //           fontSize: 20.0,
+          //           fontWeight: FontWeight.bold,
+          //           color: Colors.black,
+          //         ),
+          //       ),
+          //       subtitle: Text(
+          //         '000-000-0000',
+          //         style: TextStyle(
+          //           fontFamily: 'Mosafin',
+          //           fontSize: 15.0,
+          //           fontWeight: FontWeight.bold,
+          //           color: Colors.black,
+          //         ),
+          //       ),
+          //     ),
+          //   ),
+          // ),
           SafeArea(
             child: Padding(
-              padding: EdgeInsets.only(top: 260),
+              padding: EdgeInsets.only(top: 200),
               child: ListView.builder(
                 itemCount: itemCount,
                 itemBuilder: (context, index) {

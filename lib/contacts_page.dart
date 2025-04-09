@@ -260,7 +260,7 @@ class _ContactsPageState extends State<ContactsPage> {
           ),
           Positioned(
             top: 170.0,
-            left: 10,
+            left: 30,
             right: 30.0,
             child: TextField(
               onChanged: (value) {
