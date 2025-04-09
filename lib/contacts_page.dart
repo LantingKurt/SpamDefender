@@ -1,15 +1,35 @@
 // Flutter Dependencies
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
-
-// UI Screens
-import 'contacts_native/edit_contacts.dart';
+import 'dart:convert';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 class ContactsPage extends StatefulWidget {
   const ContactsPage({super.key});
 
   @override
   State<ContactsPage> createState() => _ContactsPageState();
+
+  // Make addContact a static method
+  static Future<void> addContact(String name, String phone) async {
+    if (await FlutterContacts.requestPermission()) {
+      final newContact = Contact(
+        displayName: name,
+        name: Name(first: name),
+        phones: [Phone(phone)],
+      );
+
+      try {
+        await FlutterContacts.insertContact(newContact);
+        // No need to call _fetchContacts here since it's not tied to the UI
+      } catch (e) {
+        debugPrint('Failed to add contact: $e');
+      }
+    } else {
+      debugPrint('Permission denied');
+    }
+  }
 }
 
 class _ContactsPageState extends State<ContactsPage> {
@@ -21,20 +41,21 @@ class _ContactsPageState extends State<ContactsPage> {
   Future<void> _deleteContact(Contact contact) async {
     final shouldDelete = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Confirm Deletion'),
-        content: Text('Are you sure you want to delete this contact?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel'),
+      builder:
+          (context) => AlertDialog(
+            title: Text('Confirm Deletion'),
+            content: Text('Are you sure you want to delete this contact?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text('Delete', style: TextStyle(color: Colors.red)),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
     );
 
     if (shouldDelete == true) {
@@ -58,27 +79,6 @@ class _ContactsPageState extends State<ContactsPage> {
     }
   }
 
-  // Add a new contact to the phone and update the local list
-  Future<void> _addContact(String name, String phone) async {
-    if (await FlutterContacts.requestPermission()) {
-      final newContact = Contact(
-        displayName: name,
-        name: Name(first: name),
-        phones: [Phone(phone)],
-      );
-
-      try {
-        await FlutterContacts.insertContact(newContact);
-        await _fetchContacts();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Contact added successfully')));
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to add contact: $e')));
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Permission denied')));
-    }
-  }
-
   // Edit an existing contact on the phone and update the local list
   Future<void> _editContact(
     Contact contact,
@@ -89,19 +89,30 @@ class _ContactsPageState extends State<ContactsPage> {
     String newSuffix,
     String newPhone,
   ) async {
-    final fullContact = await FlutterContacts.getContact(contact.id, withProperties: true, withAccounts: true);
+    final fullContact = await FlutterContacts.getContact(
+      contact.id,
+      withProperties: true,
+      withAccounts: true,
+    );
 
     if (fullContact == null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to fetch full contact details')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to fetch full contact details')),
+      );
       return;
     }
 
     // Update the name fields
-    fullContact.name.prefix = newPrefix.isNotEmpty ? newPrefix : fullContact.name.prefix;
-    fullContact.name.first = newFirstName.isNotEmpty ? newFirstName : fullContact.name.first;
-    fullContact.name.middle = newMiddleName.isNotEmpty ? newMiddleName : fullContact.name.middle;
-    fullContact.name.last = newLastName.isNotEmpty ? newLastName : fullContact.name.last;
-    fullContact.name.suffix = newSuffix.isNotEmpty ? newSuffix : fullContact.name.suffix;
+    fullContact.name.prefix =
+        newPrefix.isNotEmpty ? newPrefix : fullContact.name.prefix;
+    fullContact.name.first =
+        newFirstName.isNotEmpty ? newFirstName : fullContact.name.first;
+    fullContact.name.middle =
+        newMiddleName.isNotEmpty ? newMiddleName : fullContact.name.middle;
+    fullContact.name.last =
+        newLastName.isNotEmpty ? newLastName : fullContact.name.last;
+    fullContact.name.suffix =
+        newSuffix.isNotEmpty ? newSuffix : fullContact.name.suffix;
 
     // Ensure displayName is updated
     fullContact.displayName = [
@@ -109,7 +120,7 @@ class _ContactsPageState extends State<ContactsPage> {
       fullContact.name.first,
       fullContact.name.middle,
       fullContact.name.last,
-      fullContact.name.suffix
+      fullContact.name.suffix,
     ].where((namePart) => namePart.isNotEmpty).join(' ');
 
     // Update the phone number
@@ -131,9 +142,45 @@ class _ContactsPageState extends State<ContactsPage> {
         }
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Contact updated successfully')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Contact updated successfully')));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update contact: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to update contact: $e')));
+    }
+  }
+
+  Future<void> _markAsSpam(Contact contact) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/blacklist.json');
+
+    try {
+      List<dynamic> blacklist = [];
+      if (await file.exists()) {
+        final jsonString = await file.readAsString();
+        blacklist = json.decode(jsonString);
+      }
+
+      final spamContact = {
+        "sender": contact.displayName.isNotEmpty ? contact.displayName : "Unknown",
+        "number": contact.phones.isNotEmpty ? contact.phones[0].number : "No phone"
+      };
+
+      blacklist.add(spamContact);
+      await file.writeAsString(json.encode(blacklist));
+
+      // Delete the contact after adding to blacklist
+      await _deleteContact(contact);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Contact marked as spam and deleted')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to mark as spam: $e')),
+      );
     }
   }
 
@@ -155,7 +202,11 @@ class _ContactsPageState extends State<ContactsPage> {
         // Fetch full details
         final detailedContacts = await Future.wait(
           fetchedContacts.map((contact) async {
-            return await FlutterContacts.getContact(contact.id, withProperties: true, withAccounts: true);
+            return await FlutterContacts.getContact(
+              contact.id,
+              withProperties: true,
+              withAccounts: true,
+            );
           }),
         );
 
@@ -165,11 +216,15 @@ class _ContactsPageState extends State<ContactsPage> {
         });
       } catch (e) {
         setState(() => isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } else {
       setState(() => isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Permission denied')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Permission denied')));
     }
   }
 
@@ -356,7 +411,9 @@ class _ContactsPageState extends State<ContactsPage> {
                                       showModalBottomSheet(
                                         context: context,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.vertical(top: Radius.circular(15.0)),
+                                          borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(15.0),
+                                          ),
                                         ),
                                         backgroundColor: Color(0xFF050a30),
                                         builder: (context) {
@@ -369,18 +426,34 @@ class _ContactsPageState extends State<ContactsPage> {
                                                   width: double.infinity,
                                                   child: ElevatedButton(
                                                     style: ElevatedButton.styleFrom(
-                                                      backgroundColor: Colors.white,
-                                                      foregroundColor: Color(0xFF050a30),
-                                                      padding: EdgeInsets.symmetric(vertical: 15),
+                                                      backgroundColor:
+                                                          Colors.white,
+                                                      foregroundColor: Color(
+                                                        0xFF050a30,
+                                                      ),
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                            vertical: 15,
+                                                          ),
                                                       shape: RoundedRectangleBorder(
-                                                        borderRadius: BorderRadius.circular(10),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              10,
+                                                            ),
                                                       ),
                                                     ),
                                                     onPressed: () {
                                                       Navigator.pop(context);
-                                                      _showEditContactDialog(contact);
+                                                      _showEditContactDialog(
+                                                        contact,
+                                                      );
                                                     },
-                                                    child: Text('Edit', style: TextStyle(fontSize: 16)),
+                                                    child: Text(
+                                                      'Edit',
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                      ),
+                                                    ),
                                                   ),
                                                 ),
                                                 SizedBox(height: 10),
@@ -388,20 +461,67 @@ class _ContactsPageState extends State<ContactsPage> {
                                                   width: double.infinity,
                                                   child: ElevatedButton(
                                                     style: ElevatedButton.styleFrom(
-                                                      backgroundColor: Colors.white,
-                                                      foregroundColor: Colors.red,
-                                                      padding: EdgeInsets.symmetric(vertical: 15),
+                                                      backgroundColor:
+                                                          Colors.white,
+                                                      foregroundColor:
+                                                          Colors.orange,
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                            vertical: 15,
+                                                          ),
                                                       shape: RoundedRectangleBorder(
-                                                        borderRadius: BorderRadius.circular(10),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              10,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                      _markAsSpam(contact);
+                                                    },
+                                                    child: Text(
+                                                      'Mark as Spam',
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                
+                                                SizedBox(height: 10),
+                                                SizedBox(
+                                                  width: double.infinity,
+                                                  child: ElevatedButton(
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor:
+                                                          Colors.white,
+                                                      foregroundColor:
+                                                          Colors.red,
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                            vertical: 15,
+                                                          ),
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              10,
+                                                            ),
                                                       ),
                                                     ),
                                                     onPressed: () {
                                                       Navigator.pop(context);
                                                       _deleteContact(contact);
                                                     },
-                                                    child: Text('Delete', style: TextStyle(fontSize: 16)),
+                                                    child: Text(
+                                                      'Delete',
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                      ),
+                                                    ),
                                                   ),
                                                 ),
+
                                               ],
                                             ),
                                           );
@@ -458,7 +578,7 @@ class _ContactsPageState extends State<ContactsPage> {
             ),
             TextButton(
               onPressed: () {
-                _addContact(nameController.text, phoneController.text);
+                ContactsPage.addContact(nameController.text, phoneController.text);
                 Navigator.pop(context);
               },
               child: Text('Add'),
@@ -473,7 +593,9 @@ class _ContactsPageState extends State<ContactsPage> {
   void _showEditContactDialog(Contact contact) {
     final prefixController = TextEditingController(text: contact.name.prefix);
     final firstNameController = TextEditingController(text: contact.name.first);
-    final middleNameController = TextEditingController(text: contact.name.middle);
+    final middleNameController = TextEditingController(
+      text: contact.name.middle,
+    );
     final lastNameController = TextEditingController(text: contact.name.last);
     final suffixController = TextEditingController(text: contact.name.suffix);
     final phoneController = TextEditingController(
@@ -541,5 +663,4 @@ class _ContactsPageState extends State<ContactsPage> {
       },
     );
   }
-
 }

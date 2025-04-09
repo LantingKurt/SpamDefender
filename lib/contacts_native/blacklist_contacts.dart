@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'whitelist_contacts.dart' as whitelistFile;
+import '../contacts_page.dart'; // Import ContactsPage to use addContact
 
 // UI Screens
 import 'edit_contacts.dart';
@@ -52,11 +53,10 @@ class BlacklistScreenState extends State<BlacklistScreen> {
       } else {
         // Initialize the file with an empty array if it doesn't exist
         await file.writeAsString(json.encode([
-  { "sender": "Scam Likely", "number": "123-456-7890" },
-  { "sender": "Fraudster Kurt", "number": "987-654-3210" },
-  { "sender": "Shady Wana", "number": "555-123-4567" }
-]
-));
+          { "sender": "Scam Likely", "number": "123-456-7890" },
+          { "sender": "Fraudster Kurt", "number": "987-654-3210" },
+          { "sender": "Shady Wana", "number": "555-123-4567" }
+        ]));
         debugPrint("Blacklist file created and initialized.");
       }
     } catch (e) {
@@ -78,9 +78,40 @@ class BlacklistScreenState extends State<BlacklistScreen> {
   // Blacklist to Whitelist
   // blacklist => actual list of all contacts in the blacklist
   // contact => contact we want to transfer
-  void _markContactAsWhitelist(List<Map<String, String>> blacklist, Map<String, String> contact){
+  void _markContactAsWhitelist(List<Map<String, String>> blacklist, Map<String, String> contact) {
     blacklist.removeWhere((item) => item['number'] == contact['number']);
     whitelistFile.WhitelistScreenState().whitelist.insert(0, contact);
+  }
+
+  Future<void> _markAsSafe(Map<String, String> contact) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/blacklist.json');
+
+    try {
+      if (await file.exists()) {
+        final jsonString = await file.readAsString();
+        List<dynamic> blacklist = json.decode(jsonString);
+
+        // Remove the contact from the blacklist
+        blacklist.removeWhere((item) => item['number'] == contact['number']);
+        await file.writeAsString(json.encode(blacklist));
+
+        // Add the contact back to the Android phone
+        await ContactsPage.addContact(contact['sender']!, contact['number']!);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Contact marked as safe and added back')),
+        );
+
+        setState(() {
+          this.blacklist.remove(contact);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to mark as safe: $e')),
+      );
+    }
   }
 
   // Modify _deleteContact to remove by contact rather than index
@@ -128,12 +159,12 @@ class BlacklistScreenState extends State<BlacklistScreen> {
   Widget build(BuildContext context) {
     // Filter whitelist based on search query
     List<Map<String, String>> filteredBlacklist =
-      blacklist.where((contact) {
-        final sender = contact['sender']?.toLowerCase() ?? '';
-        final number = contact['number'] ?? '';
-        return sender.contains(_searchQuery.toLowerCase()) ||
-            number.contains(_searchQuery);
-      }).toList();
+        blacklist.where((contact) {
+          final sender = contact['sender']?.toLowerCase() ?? '';
+          final number = contact['number'] ?? '';
+          return sender.contains(_searchQuery.toLowerCase()) ||
+              number.contains(_searchQuery);
+        }).toList();
 
     // Group filtered contacts alphabetically
 
@@ -151,7 +182,7 @@ class BlacklistScreenState extends State<BlacklistScreen> {
 
     int itemCount = sectionHeaders.fold<int>(
       0,
-          (sum, letter) => sum + 1 + groupedContacts[letter]!.length,
+      (sum, letter) => sum + 1 + groupedContacts[letter]!.length,
     );
 
     return Scaffold(
@@ -353,7 +384,6 @@ class BlacklistScreenState extends State<BlacklistScreen> {
                         icon: Icon(Icons.more_horiz),
                         onPressed: () {
                           showModalBottomSheet(
-
                             context: context,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.vertical(top: Radius.circular(15.0)),
@@ -361,58 +391,77 @@ class BlacklistScreenState extends State<BlacklistScreen> {
                             backgroundColor: Color(0xFF050a30),
                             builder: (context) {
                               return Container(
-                                  padding: EdgeInsets.all(10),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      SizedBox(
-                                        width: double.infinity,
-                                        child: ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.white,
-                                            foregroundColor: Color(0xFF050a30),
-                                            padding: EdgeInsets.symmetric(vertical: 15),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(10),
-                                            ),
+                                padding: EdgeInsets.all(10),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.white,
+                                          foregroundColor: Color(0xFF050a30),
+                                          padding: EdgeInsets.symmetric(vertical: 15),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10),
                                           ),
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) => EditContactScreen(
-                                                  contact: contact,
-                                                  index: blacklist.indexOf(contact),
-                                                  onUpdate: _updateContact,
-                                                ),
+                                        ),
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => EditContactScreen(
+                                                contact: contact,
+                                                index: blacklist.indexOf(contact),
+                                                onUpdate: _updateContact,
                                               ),
-                                            );
-                                          },
-                                          child: Text('Edit', style: TextStyle(fontSize: 16)),
-                                        ),
-                                      ),
-                                      SizedBox(height: 10),
-                                      SizedBox(
-                                        width: double.infinity,
-                                        child: ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.white,
-                                            foregroundColor: Colors.red,
-                                            padding: EdgeInsets.symmetric(vertical: 15),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(10),
                                             ),
+                                          );
+                                        },
+                                        child: Text('Edit', style: TextStyle(fontSize: 16)),
+                                      ),
+                                    ),
+                                    SizedBox(height: 10),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.white,
+                                          foregroundColor: Colors.green,
+                                          padding: EdgeInsets.symmetric(vertical: 15),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10),
                                           ),
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                            _deleteContact(contact);
-                                          },
-                                          child: Text('Delete', style: TextStyle(fontSize: 16)),
                                         ),
-                                      )
-                                    ],
-                                  )
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                          _markAsSafe(contact);
+                                        },
+                                        child: Text('Mark as Safe', style: TextStyle(fontSize: 16)),
+                                      ),
+                                    ),
+                                    SizedBox(height: 10),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.white,
+                                          foregroundColor: Colors.red,
+                                          padding: EdgeInsets.symmetric(vertical: 15),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                          _deleteContact(contact);
+                                        },
+                                        child: Text('Delete', style: TextStyle(fontSize: 16)),
+                                      ),
+                                    )
+                                  ],
+                                ),
                               );
                             },
                           );
