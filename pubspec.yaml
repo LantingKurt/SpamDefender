@@ -106,6 +106,8 @@ flutter:
     - images/minibartop.png
     - images/recentlydeleted.png
     - images/keepinboxclean.png
+    - assets/spam_messages.json
+    - assets/blacklist.json
 
 
 

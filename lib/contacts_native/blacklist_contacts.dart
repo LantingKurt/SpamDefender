@@ -1,5 +1,9 @@
 // Flutter Dependencies
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 import 'whitelist_contacts.dart' as whitelistFile;
 
 // UI Screens
@@ -15,29 +19,67 @@ class BlacklistScreen extends StatefulWidget {
 }
 
 class BlacklistScreenState extends State<BlacklistScreen> {
-  final List<Map<String, String>> blacklist = [
-    {'name': 'Scam Likely', 'phone': '123-456-7890'},
-    {'name': 'Fraudster Kurt', 'phone': '987-654-3210'},
-    {'name': 'Shady Wana', 'phone': '555-123-4567'},
-    {'name': 'Anton Swindle', 'phone': '444-234-5678'},
-    {'name': 'Rei Phisher', 'phone': '333-345-6789'},
-    {'name': 'Ella Skimmer', 'phone': '222-456-7891'},
-    {'name': 'Lily Deception', 'phone': '112-567-8901'},
-    {'name': 'Mica Con', 'phone': '113-567-8901'},
-    {'name': 'Andrea Spoofer', 'phone': '114-567-8901'},
-    {'name': 'Janelle Fraud', 'phone': '115-567-8901'},
-    {'name': 'Joana Hustler', 'phone': '116-567-8901'},
-    {'name': 'Nicholas Ponzi', 'phone': '117-567-8901'},
-    {'name': 'Ton Chio Swindler', 'phone': '118-567-8901'},
-  ];
+  List<Map<String, String>> blacklist = [];
   String _searchQuery = ''; // Search query variable
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBlacklist(); // Load blacklist from file
+    _printAppDirectory(); // Print the directory path
+  }
+
+  Future<void> _printAppDirectory() async {
+    final directory = await getApplicationDocumentsDirectory();
+    debugPrint("App-specific directory: ${directory.path}");
+  }
+
+  Future<File> _getBlacklistFile() async {
+    final directory = await getApplicationDocumentsDirectory();
+    print('${directory.path}/blacklist.json');
+    return File('${directory.path}/blacklist.json');
+  }
+
+  Future<void> _loadBlacklist() async {
+    try {
+      final file = await _getBlacklistFile();
+      if (await file.exists()) {
+        final String jsonString = await file.readAsString();
+        final List<dynamic> data = json.decode(jsonString);
+        setState(() {
+          blacklist = data.map((item) => Map<String, String>.from(item)).toList();
+        });
+      } else {
+        // Initialize the file with an empty array if it doesn't exist
+        await file.writeAsString(json.encode([
+  { "sender": "Scam Likely", "number": "123-456-7890" },
+  { "sender": "Fraudster Kurt", "number": "987-654-3210" },
+  { "sender": "Shady Wana", "number": "555-123-4567" }
+]
+));
+        debugPrint("Blacklist file created and initialized.");
+      }
+    } catch (e) {
+      debugPrint("Error loading or initializing blacklist: $e");
+    }
+  }
+
+  Future<void> _saveBlacklist() async {
+    try {
+      final file = await _getBlacklistFile();
+      await file.writeAsString(json.encode(blacklist));
+      debugPrint("Blacklist saved successfully.");
+    } catch (e) {
+      debugPrint("Error saving blacklist: $e");
+    }
+  }
 
   // Mark Contact as Blacklist from Whitelist (and Vice Versa)
   // Blacklist to Whitelist
   // blacklist => actual list of all contacts in the blacklist
   // contact => contact we want to transfer
   void _markContactAsWhitelist(List<Map<String, String>> blacklist, Map<String, String> contact){
-    blacklist.removeWhere((item) => item['phone'] == contact['phone']);
+    blacklist.removeWhere((item) => item['number'] == contact['number']);
     whitelistFile.WhitelistScreenState().whitelist.insert(0, contact);
   }
 
@@ -46,56 +88,59 @@ class BlacklistScreenState extends State<BlacklistScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Confirm Deletion'),
-        content: Text('Are you sure you want to delete this contact?'),
+        title: const Text('Confirm Deletion'),
+        content: const Text('Are you sure you want to delete this contact?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               setState(() {
                 blacklist.remove(contact);
               });
+              await _saveBlacklist(); // Save changes to file
               Navigator.pop(context);
             },
-            child: Text('Delete', style: TextStyle(color: Colors.red)),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
     );
   }
 
-  void _updateContact(Map<String, String> updatedContact, int index) {
+  void _updateContact(Map<String, String> updatedContact, int index) async {
     setState(() {
       blacklist[index] = updatedContact;
     });
+    await _saveBlacklist(); // Save changes to file
   }
 
-  void _addNewContact(Map<String, String> newContact) {
+  void _addNewContact(Map<String, String> newContact) async {
     setState(() {
       blacklist.add(newContact);
     });
+    await _saveBlacklist(); // Save changes to file
   }
 
   @override
   Widget build(BuildContext context) {
     // Filter whitelist based on search query
     List<Map<String, String>> filteredBlacklist =
-    blacklist.where((contact) {
-      final name = contact['name']!.toLowerCase();
-      final phone = contact['phone']!;
-      return name.contains(_searchQuery.toLowerCase()) ||
-          phone.contains(_searchQuery);
-    }).toList();
+      blacklist.where((contact) {
+        final sender = contact['sender']?.toLowerCase() ?? '';
+        final number = contact['number'] ?? '';
+        return sender.contains(_searchQuery.toLowerCase()) ||
+            number.contains(_searchQuery);
+      }).toList();
 
     // Group filtered contacts alphabetically
 
     Map<String, List<Map<String, String>>> groupedContacts = {};
 
     for (var contact in filteredBlacklist) {
-      String firstLetter = contact['name']![0].toUpperCase();
+      String firstLetter = contact['sender']?[0].toUpperCase() ?? '#';
       if (!groupedContacts.containsKey(firstLetter)) {
         groupedContacts[firstLetter] = [];
       }
@@ -302,8 +347,8 @@ class BlacklistScreenState extends State<BlacklistScreen> {
                     final contact = contacts[contactIndex];
                     return ListTile(
                       leading: Icon(Icons.person),
-                      title: Text(contact['name']!),
-                      subtitle: Text(contact['phone']!),
+                      title: Text(contact['sender']!),
+                      subtitle: Text(contact['number']!),
                       trailing: IconButton(
                         icon: Icon(Icons.more_horiz),
                         onPressed: () {
