@@ -6,6 +6,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'dart:io'; // Add this import for file operations
 import 'package:path_provider/path_provider.dart'; // Add this for file paths
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 // Top-level function for background message handling
 Future<void> backgroundMessageHandler(SmsMessage message) async {
@@ -57,6 +59,7 @@ class NotificationScreenState extends State<NotificationScreen> {
   void initState() {
     super.initState();
     _loadNotificationState(); // Load the state from a file
+    _initializeState();
   }
 
   Future<void> _loadNotificationState() async {
@@ -134,14 +137,44 @@ class NotificationScreenState extends State<NotificationScreen> {
         String senderName = await _resolveSenderName(
           message.address ?? "Unknown",
         );
-        print(
-          "from notif: Message received from: $senderName, Content: ${message.body}",
-        );
-        _showNotification(senderName, message.body ?? "No content");
+
+        // Check if the message is spam
+        bool isSpam = await _checkIfSpam(message.body ?? "No content");
+
+        if (isSpam) {
+          // Alert user if it's spam
+          _showNotification("Spam Alert", "Message from $senderName is spam!");
+        } else {
+          // Show regular notification
+          _showNotification(senderName, message.body ?? "No content");
+        }
       },
       onBackgroundMessage:
           backgroundMessageHandler, // Use the top-level function
     );
+  }
+
+  Future<bool> _checkIfSpam(String message) async {
+    try {
+      final response = await http.post(
+        Uri.parse(
+          'http://192.168.1.19:5000/predict', // Updated with the correct IP address
+        ),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'message': message}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['is_spam'] ?? false;
+      } else {
+        print("Error from server: ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print("Error checking spam: $e");
+      return false;
+    }
   }
 
   Future<String> _resolveSenderName(String senderNumber) async {
