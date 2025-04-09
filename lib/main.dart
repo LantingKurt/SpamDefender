@@ -11,14 +11,14 @@ import 'package:spamdefender/firebase_auth_implementation/firebase_options.dart'
 // UI Screens
 import 'splash_screen.dart';
 
-
 Future main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform,);
+  WidgetsFlutterBinding.ensureInitialized(); // Ensure proper initialization
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await FirebaseAppCheck.instance.activate(
     webProvider: ReCaptchaV3Provider('recaptcha-v3-site-key'),
     androidProvider: AndroidProvider.debug,
   );
+
   runApp(MyApp());
 }
 

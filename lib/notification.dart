@@ -1,5 +1,41 @@
 // Flutter Dependencies
 import 'package:flutter/material.dart';
+import 'package:another_telephony/telephony.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
+import 'dart:io'; // Add this import for file operations
+import 'package:path_provider/path_provider.dart'; // Add this for file paths
+
+// Top-level function for background message handling
+Future<void> backgroundMessageHandler(SmsMessage message) async {
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+  );
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+  const AndroidNotificationDetails androidPlatformChannelSpecifics =
+      AndroidNotificationDetails(
+        'sms_channel',
+        'SMS Notifications',
+        channelDescription: 'Notifications for incoming SMS messages',
+        importance: Importance.high,
+        priority: Priority.high,
+      );
+  const NotificationDetails platformChannelSpecifics = NotificationDetails(
+    android: androidPlatformChannelSpecifics,
+  );
+  await flutterLocalNotificationsPlugin.show(
+    0,
+    message.address ?? "Unknown",
+    message.body ?? "No content",
+    platformChannelSpecifics,
+  );
+}
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -10,18 +46,209 @@ class NotificationScreen extends StatefulWidget {
 
 class NotificationScreenState extends State<NotificationScreen> {
   bool isNotificationsEnabled = false;
+  bool pendingNotificationsEnabled = false; // Temporary state for the switch
   String displayOption = 'Banners';
 
-  void _toggleNotifications(bool value) {
+  final Telephony telephony = Telephony.instance;
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotificationState(); // Load the state from a file
+  }
+
+  Future<void> _loadNotificationState() async {
+    try {
+      final file = await _getStateFile();
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        setState(() {
+          isNotificationsEnabled = content == 'true';
+          pendingNotificationsEnabled = isNotificationsEnabled;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error loading notification state: $e");
+    }
+  }
+
+  Future<void> _saveNotificationStateToFile() async {
+    try {
+      final file = await _getStateFile();
+      await file.writeAsString(isNotificationsEnabled.toString());
+    } catch (e) {
+      debugPrint("Error saving notification state: $e");
+    }
+  }
+
+  Future<File> _getStateFile() async {
+    final directory = await getApplicationDocumentsDirectory();
+    return File('${directory.path}/notification_state.txt');
+  }
+
+  void _initializeState() {
+    debugPrint("Initializing in-memory notification settings...");
+    // Default values for in-memory state
+    pendingNotificationsEnabled = isNotificationsEnabled;
+    debugPrint(
+      "Initial state - isNotificationsEnabled: $isNotificationsEnabled, pendingNotificationsEnabled: $pendingNotificationsEnabled",
+    );
+  }
+
+  void _savePendingNotificationState(bool value) {
+    debugPrint("Saving pendingNotificationsEnabled in memory: $value");
     setState(() {
-      isNotificationsEnabled = value;
+      pendingNotificationsEnabled = value;
     });
+    debugPrint(
+      "Updated state - pendingNotificationsEnabled: $pendingNotificationsEnabled",
+    );
+  }
+
+  void _initializeNotifications() async {
+    // Request notification permissions using permission_handler
+    final status = await Permission.notification.request();
+
+    if (!status.isGranted) {
+      // Permission not granted, handle accordingly
+      print("Notification permissions not granted.");
+      return;
+    }
+
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const InitializationSettings initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  void _listenForSms() {
+    telephony.listenIncomingSms(
+      onNewMessage: (SmsMessage message) async {
+        if (!isNotificationsEnabled) {
+          print("Notifications are disabled. Ignoring incoming message.");
+          return; // Ignore the message if notifications are disabled
+        }
+        String senderName = await _resolveSenderName(
+          message.address ?? "Unknown",
+        );
+        print(
+          "from notif: Message received from: $senderName, Content: ${message.body}",
+        );
+        _showNotification(senderName, message.body ?? "No content");
+      },
+      onBackgroundMessage:
+          backgroundMessageHandler, // Use the top-level function
+    );
+  }
+
+  Future<String> _resolveSenderName(String senderNumber) async {
+    if (await FlutterContacts.requestPermission()) {
+      final contacts = await FlutterContacts.getContacts(withProperties: true);
+      for (var contact in contacts) {
+        if (contact.phones.any(
+          (phone) =>
+              phone.number.replaceAll(RegExp(r'\D'), '') ==
+              senderNumber.replaceAll(RegExp(r'\D'), ''),
+        )) {
+          return contact.displayName;
+        }
+      }
+    }
+    return senderNumber; // Return the number if no matching contact is found
+  }
+
+  void _showNotification(String title, String body) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+          'sms_channel',
+          'SMS Notifications',
+          channelDescription: 'Notifications for incoming SMS messages',
+          importance: Importance.high,
+          priority: Priority.high,
+        );
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+    );
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      title,
+      body,
+      platformChannelSpecifics,
+    );
+  }
+
+  void _saveNotificationSettings() async {
+    debugPrint("Save button pressed. Showing confirmation dialog...");
+    final shouldSave = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            pendingNotificationsEnabled
+                ? "Enable Notifications"
+                : "Disable Notifications",
+          ),
+          content: Text(
+            pendingNotificationsEnabled
+                ? "Are you sure you want to enable notifications?"
+                : "Are you sure you want to disable notifications?",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("Confirm"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldSave == true) {
+      debugPrint("User confirmed. Saving notification settings in memory...");
+      setState(() {
+        isNotificationsEnabled = pendingNotificationsEnabled;
+      });
+      debugPrint(
+        "Updated state - isNotificationsEnabled: $isNotificationsEnabled, pendingNotificationsEnabled: $pendingNotificationsEnabled",
+      );
+
+      await _saveNotificationStateToFile(); // Save the state to a file
+
+      if (isNotificationsEnabled) {
+        debugPrint(
+          "Notifications are enabled. Initializing notifications and SMS listener...",
+        );
+        _initializeNotifications();
+        _listenForSms();
+        print("Notifications enabled.");
+      } else {
+        debugPrint("Notifications are disabled.");
+        print("Notifications disabled.");
+      }
+    } else {
+      debugPrint("User canceled. Reverting temporary state...");
+      setState(() {
+        pendingNotificationsEnabled = isNotificationsEnabled;
+      });
+    }
   }
 
   void _setDisplayOption(String value) {
     setState(() {
       displayOption = value;
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -42,15 +269,12 @@ class NotificationScreenState extends State<NotificationScreen> {
           ),
 
           Positioned(
-            top: 37.0,
+            top: 70.0,
             left: 10,
             child: Row(
               children: [
                 IconButton(
-                  icon: Icon(
-                    Icons.arrow_back_ios,
-                    color: Color(0xddffad49),
-                  ),
+                  icon: Icon(Icons.arrow_back_ios, color: Color(0xddffad49)),
                   onPressed: () {
                     Navigator.pop(context);
                   },
@@ -61,30 +285,16 @@ class NotificationScreenState extends State<NotificationScreen> {
           ),
 
           Positioned(
-            top: 80.0,
+            top: 75.0,
             left: 80.0,
             right: 80,
             child: Text(
-              'Allow Notifications',
+              'Set Notifications',
               style: TextStyle(
                 color: Color(0xffffffff),
                 fontSize: 25,
                 fontFamily: 'Mosafin',
                 fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-
-          Positioned(
-            top: 140.0,
-            left: 25.0,
-            right: 25.0,
-            child: Text(
-              'We would like to send you notifications for important updates. Please enable notifications below.',
-              style: TextStyle(
-                fontFamily: 'Mosafin',
-                fontSize: 16.0,
-                color: Colors.black,
               ),
             ),
           ),
@@ -115,9 +325,12 @@ class NotificationScreenState extends State<NotificationScreen> {
                   ),
                 ),
                 trailing: Switch(
-                  value: isNotificationsEnabled,
-                  onChanged: (value) {
-                    _toggleNotifications(value);
+                  value: pendingNotificationsEnabled,
+                  onChanged: (value) async {
+                    setState(() {
+                      pendingNotificationsEnabled = value;
+                    });
+                    _savePendingNotificationState(value); // Save the state
                   },
                   activeColor: Color(0xffFFAD49),
                 ),
@@ -227,42 +440,24 @@ class NotificationScreenState extends State<NotificationScreen> {
 
           Positioned(
             bottom: 30.0,
-            left: 10.0,
-            right: 10.0,
-            child: Container(
-              padding: EdgeInsets.all(12.0),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 6,
-                    offset: Offset(0, 3),
-                  ),
-                ],
+            left: 20.0,
+            right: 20.0,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xffFFAD49),
+                padding: EdgeInsets.symmetric(vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Notification Options',
-                    style: TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  SizedBox(height: 8.0),
-                  Text(
-                    'When you enable notifications, you will receive alerts for all important updates. You can customize notifications later in your settings.',
-                    style: TextStyle(
-                      fontSize: 14.0,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
+              onPressed: _saveNotificationSettings,
+              child: const Text(
+                "Save",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
