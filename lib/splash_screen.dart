@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'messages/messages_data.dart';
 // UI Screens
 import 'welcome.dart';
+import 'json_sync.dart';
 
 // SPLASH //
 class Splash extends StatefulWidget {
@@ -19,6 +20,7 @@ void initState() {
 
   // final repository = MessagesRepository();
   // repository.uploadInitialMessages();
+  syncSpamMessagesJsonToFirebase();
 
   Future.delayed(const Duration(seconds: 2), () {
     if (mounted) {
