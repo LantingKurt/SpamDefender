@@ -58,6 +58,8 @@ dependencies:
   another_telephony: ^0.2.8
   #flutter_sms_inbox: ^1.0.3
 
+  firebase_database: ^11.1.4
+
 
 
 dev_dependencies:
