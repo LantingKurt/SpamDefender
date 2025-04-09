@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 // Firebase Implementation
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:spamdefender/messages_page.dart';
 
 // UI Screens
 import 'contacts_page.dart';
@@ -116,9 +117,7 @@ class HomeScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder:
-                              (context) => const MessagesScreen(
-                                initialTab: 0,
-                              ), // Safe Messages tab
+                              (context) => MessagesPage() // Safe Messages tab
                         ),
                       );
                     },
