@@ -60,6 +60,8 @@ class NotificationScreenState extends State<NotificationScreen> {
   final GlobalKey<MessagesPageState> messagesPageKey =
       GlobalKey<MessagesPageState>();
 
+  final TextEditingController _messageController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -296,10 +298,9 @@ class NotificationScreenState extends State<NotificationScreen> {
 
   Future<bool> _checkIfSpam(String message) async {
     try {
+      // Send the SMS message to the backend for spam prediction
       final response = await http.post(
-        Uri.parse(
-          'http://192.168.1.19:5000/predict', // Updated with the correct IP address
-        ),
+        Uri.parse('http://192.168.1.19:5000/predict'), // Backend endpoint
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'message': message}),
       );
@@ -308,11 +309,11 @@ class NotificationScreenState extends State<NotificationScreen> {
         final data = jsonDecode(response.body);
         return data['is_spam'] ?? false;
       } else {
-        print("Error from server: ${response.body}");
+        debugPrint("Error from server: ${response.body}");
         return false;
       }
     } catch (e) {
-      print("Error checking spam: $e");
+      debugPrint("Error checking spam: $e");
       return false;
     }
   }
@@ -641,6 +642,78 @@ class NotificationScreenState extends State<NotificationScreen> {
                       ],
                     ),
                   ],
+                ),
+              ),
+            ),
+          ),
+
+          Positioned(
+            bottom: 180.0,
+            left: 20.0,
+            right: 20.0,
+            child: TextField(
+              controller: _messageController,
+              decoration: InputDecoration(
+                labelText: "Enter a message to test",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+
+          Positioned(
+            bottom: 100.0,
+            left: 20.0,
+            right: 20.0,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                padding: EdgeInsets.symmetric(vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () async {
+                // Get the user-entered message
+                String userMessage = _messageController.text.trim();
+                if (userMessage.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Please enter a message to test.")),
+                  );
+                  return;
+                }
+
+                // Check if the message is spam
+                bool isSpam = await _checkIfSpam(userMessage);
+
+                // Show a dialog with the result
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text("Message Test Result"),
+                      content: Text(
+                        isSpam
+                            ? "The message is classified as SPAM."
+                            : "The message is NOT SPAM.",
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text("OK"),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: const Text(
+                "Test Message",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),

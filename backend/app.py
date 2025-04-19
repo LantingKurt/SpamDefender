@@ -1,13 +1,12 @@
 from flask import Flask, request, jsonify
-import joblib
+from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
+import torch
 
 app = Flask(__name__)
 
-# Load the trained spam detection model
-spam_model = joblib.load('assets/spam_model.pkl')
-
-# Load the vectorizer that was used during training
-vectorizer = joblib.load('assets/vectorizer.pkl')
+# Load the tokenizer and model
+tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
+model = DistilBertForSequenceClassification.from_pretrained('assets/spamdefender_ml_model/distilbert_spam_model')
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -17,13 +16,17 @@ def predict():
     if not message:
         return jsonify({'error': 'No message provided'}), 400
 
-    # Transform the message using the vectorizer
-    message_vectorized = vectorizer.transform([message])
+    # Tokenize the input message
+    inputs = tokenizer(message, return_tensors='pt', truncation=True, padding=True)
 
-    # Predict if the message is spam
-    prediction = spam_model.predict(message_vectorized)[0]
-    is_spam = bool(prediction == 1)  # Convert to native Python bool
+    # Get model predictions
+    with torch.no_grad():
+        outputs = model(**inputs)
+        prediction = torch.argmax(outputs.logits, dim=1).item()
 
+    is_spam = bool(prediction == 1)
+
+    print({'is_spam': is_spam})
     return jsonify({'is_spam': is_spam})
 
 if __name__ == '__main__':
